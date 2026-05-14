@@ -39,3 +39,13 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+/app/generated/prisma
+
+storage/recordings/*
+!storage/recordings/.gitkeep
+dev.db
+dev.db-journal
+ml/.venv/
+ml/models/*.pkl
+__pycache__/
