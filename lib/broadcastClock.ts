@@ -17,9 +17,24 @@ export type StationTimeline = {
 
 export type ClockState = {
   recording: Recording;
+  recordingIndex: number;
   offsetInRecording: number;
   globalElapsed: number;
 };
+
+export function getUpcomingRecordings(
+  timeline: StationTimeline,
+  currentIndex: number,
+  count: number,
+): Recording[] {
+  const out: Recording[] = [];
+  if (timeline.recordings.length === 0) return out;
+  for (let i = 1; i <= count; i++) {
+    const idx = (currentIndex + i) % timeline.recordings.length;
+    out.push(timeline.recordings[idx]);
+  }
+  return out;
+}
 
 export function getStationState(
   timeline: StationTimeline,
@@ -31,10 +46,12 @@ export function getStationState(
   }
   const elapsed = ((now - epoch) / 1000) % timeline.totalDuration;
   let acc = 0;
-  for (const r of timeline.recordings) {
+  for (let i = 0; i < timeline.recordings.length; i++) {
+    const r = timeline.recordings[i];
     if (elapsed < acc + r.duration) {
       return {
         recording: r,
+        recordingIndex: i,
         offsetInRecording: elapsed - acc,
         globalElapsed: elapsed,
       };
@@ -44,6 +61,7 @@ export function getStationState(
   // floating-point fallback
   return {
     recording: timeline.recordings[0],
+    recordingIndex: 0,
     offsetInRecording: 0,
     globalElapsed: 0,
   };

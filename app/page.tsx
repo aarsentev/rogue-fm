@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { getStationState } from "@/lib/broadcastClock";
+import { getStationState, getUpcomingRecordings } from "@/lib/broadcastClock";
 import { getPlayer } from "@/lib/player";
+import { useMediaSession } from "@/lib/mediaSession";
 import type { StationDetail, StationSummary } from "@/lib/types";
 import { Topbar } from "@/components/Topbar";
 import { Sidebar } from "@/components/Sidebar";
 import { NowPlaying } from "@/components/NowPlaying";
+import { UpNext } from "@/components/UpNext";
 import { SkipControls } from "@/components/SkipControls";
 
 export default function Home() {
@@ -65,12 +67,30 @@ export default function Home() {
     };
   }, [started, detail]);
 
-  const state =
-    detail &&
-    getStationState(
-      { recordings: detail.recordings, totalDuration: detail.totalDuration },
-      detail.epoch,
-    );
+  const state = detail
+    ? getStationState(
+        { recordings: detail.recordings, totalDuration: detail.totalDuration },
+        detail.epoch,
+      )
+    : null;
+
+  const cycleStation = (delta: number) => {
+    if (!stations || !selectedId) return;
+    const idx = stations.findIndex((s) => s.id === selectedId);
+    if (idx < 0) return;
+    const next = stations[(idx + delta + stations.length) % stations.length];
+    if (next) setSelectedId(next.id);
+  };
+
+  useMediaSession(detail, state, started, {
+    onPlay: () => setStarted(true),
+    onPause: () => {
+      playerRef.current.unload();
+      setStarted(false);
+    },
+    onNext: () => cycleStation(1),
+    onPrev: () => cycleStation(-1),
+  });
 
   return (
     <div className="min-h-screen bg-[#080808] text-white flex flex-col">
@@ -88,6 +108,21 @@ export default function Home() {
           ) : (
             <>
               <NowPlaying detail={detail} state={state} />
+
+              <UpNext
+                items={
+                  state
+                    ? getUpcomingRecordings(
+                        {
+                          recordings: detail.recordings,
+                          totalDuration: detail.totalDuration,
+                        },
+                        state.recordingIndex,
+                        3,
+                      )
+                    : []
+                }
+              />
 
               <button
                 onClick={() => {
