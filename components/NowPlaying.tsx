@@ -2,6 +2,7 @@
 
 import { fmtTime, type StationDetail } from "@/lib/types";
 import type { ClockState } from "@/lib/broadcastClock";
+import { Cover } from "./Cover";
 
 type Props = {
   detail: StationDetail;
@@ -34,11 +35,25 @@ export function NowPlaying({ detail, state }: Props) {
       </p>
 
       <div className="bg-[#0f0f0f] rounded-2xl px-8 py-7 border border-[#181818]">
-        <p className="text-[10px] text-[#3a3a3a] tracking-[0.1em] uppercase mb-3.5">
-          Now playing
-        </p>
-        <p className="text-[26px] font-medium mb-1 text-white">{recordingName}</p>
-        <p className="text-[15px] text-[#666] mb-7">♫ Music</p>
+        <div className="flex items-center gap-6 mb-7">
+          <Cover
+            freq={detail.station.freq}
+            name={detail.station.name}
+            color={detail.station.color}
+            size={96}
+            rounded={10}
+            className="shrink-0"
+          />
+          <div className="min-w-0 flex-1">
+            <p className="text-[10px] text-[#3a3a3a] tracking-[0.1em] uppercase mb-2.5">
+              Now playing
+            </p>
+            <p className="text-[22px] font-medium mb-1 text-white truncate">
+              {recordingName}
+            </p>
+            <p className="text-[14px] text-[#666]">♫ Music</p>
+          </div>
+        </div>
 
         <div className="h-[3px] bg-[#1e1e1e] rounded mb-2">
           <div
