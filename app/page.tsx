@@ -45,27 +45,24 @@ export default function Home() {
 
   useEffect(() => {
     if (!started || !detail) return;
-    const state = getStationState(
-      { recordings: detail.recordings, totalDuration: detail.totalDuration },
-      detail.epoch,
-    );
-    if (state) {
-      playerRef.current.loadAndSync(state.recording.id, state.offsetInRecording);
-    }
-  }, [started, detail]);
+    const player = playerRef.current;
 
-  useEffect(() => {
-    if (!started || !detail) return;
-    const id = setInterval(() => {
-      const state = getStationState(
+    const evalAndSync = () => {
+      const s = getStationState(
         { recordings: detail.recordings, totalDuration: detail.totalDuration },
         detail.epoch,
       );
-      if (state) {
-        playerRef.current.loadAndSync(state.recording.id, state.offsetInRecording);
-      }
-    }, 3000);
-    return () => clearInterval(id);
+      if (s) player.loadAndSync(s.recording.id, s.offsetInRecording);
+    };
+
+    evalAndSync();
+    player.setOnEnded(evalAndSync);
+    const id = setInterval(evalAndSync, 3000);
+
+    return () => {
+      clearInterval(id);
+      player.setOnEnded(null);
+    };
   }, [started, detail]);
 
   const state =
@@ -92,14 +89,19 @@ export default function Home() {
             <>
               <NowPlaying detail={detail} state={state} />
 
-              {!started && (
-                <button
-                  onClick={() => setStarted(true)}
-                  className="mt-8 px-6 py-3 rounded-lg border border-[#181818] bg-[#0f0f0f] hover:bg-[#141414] text-sm text-[#aaa] transition-colors self-start"
-                >
-                  Tap to tune in
-                </button>
-              )}
+              <button
+                onClick={() => {
+                  if (started) {
+                    playerRef.current.unload();
+                    setStarted(false);
+                  } else {
+                    setStarted(true);
+                  }
+                }}
+                className="mt-8 px-6 py-3 rounded-lg border border-[#181818] bg-[#0f0f0f] hover:bg-[#141414] text-sm text-[#aaa] transition-colors self-start"
+              >
+                {started ? "Tune out" : "Tap to tune in"}
+              </button>
 
               <div className="mt-auto pt-10">
                 <SkipControls
