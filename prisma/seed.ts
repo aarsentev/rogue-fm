@@ -11,6 +11,53 @@ const prisma = new PrismaClient({
   adapter: new PrismaBetterSqlite3({ url }),
 });
 
+type StationSeed = {
+  name: string;
+  freq: string;
+  genre: string;
+  color: string;
+  recordings: { filename: string; displayName: string; duration: number }[];
+};
+
+const STATIONS: StationSeed[] = [
+  {
+    name: "FLASH FM",
+    freq: "98.3",
+    genre: "Dance · Pop",
+    color: "#d4a017",
+    recordings: [
+      { filename: "Flash FM.mp3", displayName: "Flash FM — Vol. 1", duration: 3792.117 },
+    ],
+  },
+  {
+    name: "WAVE 103",
+    freq: "103.9",
+    genre: "New Wave · Synthpop",
+    color: "#0288d1",
+    recordings: [
+      { filename: "Wave 103.mp3", displayName: "Wave 103 — Vol. 1", duration: 3666.103 },
+    ],
+  },
+  {
+    name: "RADIO X",
+    freq: "104.7",
+    genre: "Alternative Rock",
+    color: "#c0392b",
+    recordings: [
+      { filename: "Radio X.mp3", displayName: "Radio X — Vol. 1", duration: 3468.336 },
+    ],
+  },
+  {
+    name: "VLADIVOSTOK FM",
+    freq: "92.4",
+    genre: "Russian Pop",
+    color: "#9b6dcc",
+    recordings: [
+      { filename: "Vladivostok FM.mp3", displayName: "Vladivostok FM — Vol. 1", duration: 2930.160 },
+    ],
+  },
+];
+
 async function main() {
   await prisma.segment.deleteMany();
   await prisma.recording.deleteMany();
@@ -21,34 +68,43 @@ async function main() {
     data: { key: "epoch", value: String(Date.now()) },
   });
 
-  const station = await prisma.station.create({
-    data: {
-      name: "RADIO X",
-      freq: "98.3",
-      genre: "Test Stream",
-      color: "#d4a017",
-      sortOrder: 0,
-    },
-  });
+  for (let i = 0; i < STATIONS.length; i++) {
+    const s = STATIONS[i];
+    const station = await prisma.station.create({
+      data: {
+        name: s.name,
+        freq: s.freq,
+        genre: s.genre,
+        color: s.color,
+        sortOrder: i,
+      },
+    });
 
-  const filename = "Radio X.mp3";
-  const filepath = path.join(process.cwd(), "storage", "recordings", filename);
-  const fileSize = statSync(filepath).size;
+    for (let j = 0; j < s.recordings.length; j++) {
+      const r = s.recordings[j];
+      const filepath = path.join(
+        process.cwd(),
+        "storage",
+        "recordings",
+        r.filename,
+      );
+      const fileSize = statSync(filepath).size;
+      await prisma.recording.create({
+        data: {
+          stationId: station.id,
+          filename: r.filename,
+          displayName: r.displayName,
+          duration: r.duration,
+          fileSize,
+          sortOrder: j,
+          processingStatus: "done",
+          processedAt: new Date(),
+        },
+      });
+    }
+  }
 
-  await prisma.recording.create({
-    data: {
-      stationId: station.id,
-      filename,
-      displayName: "Radio X — Test Recording",
-      duration: 3468.336,
-      fileSize,
-      sortOrder: 0,
-      processingStatus: "done",
-      processedAt: new Date(),
-    },
-  });
-
-  console.log("Seed complete.");
+  console.log(`Seed complete: ${STATIONS.length} stations.`);
 }
 
 main()

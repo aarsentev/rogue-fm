@@ -8,7 +8,16 @@ import {
 } from "@/lib/broadcastClock";
 import { getPlayer } from "@/lib/player";
 
-type StationPayload = {
+type StationSummary = {
+  id: string;
+  name: string;
+  freq: string;
+  genre: string;
+  color: string;
+  sortOrder: number;
+};
+
+type StationDetail = {
   station: { id: string; name: string; freq: string; genre: string; color: string };
   recordings: Recording[];
   totalDuration: number;
@@ -23,17 +32,30 @@ function fmt(secs: number) {
 }
 
 export default function Home() {
-  const [data, setData] = useState<StationPayload | null>(null);
+  const [stations, setStations] = useState<StationSummary[] | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [detail, setDetail] = useState<StationDetail | null>(null);
   const [started, setStarted] = useState(false);
   const [, setTick] = useState(0);
   const playerRef = useRef(getPlayer());
 
   useEffect(() => {
-    fetch("/api/station")
+    fetch("/api/stations")
       .then((r) => r.json())
-      .then(setData)
-      .catch((e) => console.error("failed to load station", e));
+      .then((d: { stations: StationSummary[] }) => {
+        setStations(d.stations);
+        if (d.stations[0]) setSelectedId(d.stations[0].id);
+      })
+      .catch((e) => console.error("failed to load stations", e));
   }, []);
+
+  useEffect(() => {
+    if (!selectedId) return;
+    fetch(`/api/stations/${selectedId}`)
+      .then((r) => r.json())
+      .then(setDetail)
+      .catch((e) => console.error("failed to load station detail", e));
+  }, [selectedId]);
 
   useEffect(() => {
     const id = setInterval(() => setTick((t) => t + 1), 1000);
@@ -41,32 +63,31 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    if (!started || !data) return;
-    const timeline: StationTimeline = {
-      recordings: data.recordings,
-      totalDuration: data.totalDuration,
-    };
-    const state = getStationState(timeline, data.epoch);
+    if (!started || !detail) return;
+    const state = getStationState(
+      { recordings: detail.recordings, totalDuration: detail.totalDuration },
+      detail.epoch,
+    );
     if (state) {
       playerRef.current.loadAndSync(state.recording.id, state.offsetInRecording);
     }
-  }, [started, data]);
+  }, [started, detail]);
 
   useEffect(() => {
-    if (!started || !data) return;
+    if (!started || !detail) return;
     const id = setInterval(() => {
       const state = getStationState(
-        { recordings: data.recordings, totalDuration: data.totalDuration },
-        data.epoch,
+        { recordings: detail.recordings, totalDuration: detail.totalDuration },
+        detail.epoch,
       );
       if (state) {
         playerRef.current.loadAndSync(state.recording.id, state.offsetInRecording);
       }
     }, 3000);
     return () => clearInterval(id);
-  }, [started, data]);
+  }, [started, detail]);
 
-  if (!data) {
+  if (!stations || !detail) {
     return (
       <div className="min-h-screen bg-[#080808] text-[#666] flex items-center justify-center font-sans">
         Loading…
@@ -75,10 +96,10 @@ export default function Home() {
   }
 
   const timeline: StationTimeline = {
-    recordings: data.recordings,
-    totalDuration: data.totalDuration,
+    recordings: detail.recordings,
+    totalDuration: detail.totalDuration,
   };
-  const state = getStationState(timeline, data.epoch);
+  const state = getStationState(timeline, detail.epoch);
   const progress = state
     ? (state.offsetInRecording / state.recording.duration) * 100
     : 0;
@@ -103,12 +124,12 @@ export default function Home() {
         </div>
         <h1
           className="text-[56px] font-semibold m-0 leading-none tracking-[-0.03em]"
-          style={{ color: data.station.color }}
+          style={{ color: detail.station.color }}
         >
-          {data.station.name}
+          {detail.station.name}
         </h1>
         <p className="text-sm text-[#444] mt-1 mb-11">
-          {data.station.freq} FM · {data.station.genre}
+          {detail.station.freq} FM · {detail.station.genre}
         </p>
 
         <div className="bg-[#0f0f0f] rounded-2xl px-8 py-7 border border-[#181818]">
@@ -123,7 +144,7 @@ export default function Home() {
           <div className="h-[3px] bg-[#1e1e1e] rounded mb-2">
             <div
               className="h-full rounded transition-[width] duration-[1s] ease-linear"
-              style={{ width: `${progress}%`, background: data.station.color }}
+              style={{ width: `${progress}%`, background: detail.station.color }}
             />
           </div>
           <div className="flex justify-between items-center">
@@ -147,6 +168,10 @@ export default function Home() {
             Tap to tune in
           </button>
         )}
+
+        <p className="text-[10px] text-[#2a2a2a] tracking-[0.08em] mt-8">
+          {stations.length} stations loaded · sidebar arrives in next commit
+        </p>
       </main>
     </div>
   );

@@ -2,9 +2,14 @@ import { prisma } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
-  const station = await prisma.station.findFirst({
-    orderBy: { sortOrder: "asc" },
+export async function GET(
+  _req: Request,
+  { params }: { params: Promise<{ stationId: string }> },
+) {
+  const { stationId } = await params;
+
+  const station = await prisma.station.findUnique({
+    where: { id: stationId },
     include: {
       recordings: {
         where: { processingStatus: "done" },
@@ -21,7 +26,7 @@ export async function GET() {
   });
 
   if (!station) {
-    return Response.json({ error: "No station" }, { status: 404 });
+    return Response.json({ error: "Station not found" }, { status: 404 });
   }
 
   const epochRow = await prisma.settings.findUnique({ where: { key: "epoch" } });
