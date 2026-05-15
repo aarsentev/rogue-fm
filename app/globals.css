@@ -1,26 +1,26 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+html,
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: #080808;
+  color: #fff;
+  font-family: system-ui, -apple-system, sans-serif;
 }
+
+.eq-bar {
+  animation-duration: 0.7s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+.eq-bar-0 { animation-name: eq0; }
+.eq-bar-1 { animation-name: eq1; animation-delay: 0.1s; }
+.eq-bar-2 { animation-name: eq2; animation-delay: 0.2s; }
+.eq-bar-3 { animation-name: eq3; animation-delay: 0.05s; }
+.eq-bar-4 { animation-name: eq4; animation-delay: 0.15s; }
+
+@keyframes eq0 { from { height: 4px;  } to { height: 10px; } }
+@keyframes eq1 { from { height: 10px; } to { height: 4px;  } }
+@keyframes eq2 { from { height: 6px;  } to { height: 14px; } }
+@keyframes eq3 { from { height: 12px; } to { height: 5px;  } }
+@keyframes eq4 { from { height: 7px;  } to { height: 13px; } }
