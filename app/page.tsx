@@ -7,6 +7,7 @@ import { useMediaSession } from "@/lib/mediaSession";
 import type { StationDetail, StationSummary } from "@/lib/types";
 import { Topbar } from "@/components/Topbar";
 import { Sidebar } from "@/components/Sidebar";
+import { CoverFlow } from "@/components/CoverFlow";
 import { NowPlaying } from "@/components/NowPlaying";
 import { UpNext } from "@/components/UpNext";
 import { SkipControls } from "@/components/SkipControls";
@@ -102,43 +103,51 @@ export default function Home() {
           activeRecordingName={state?.recording.displayName ?? null}
           onSelect={setSelectedId}
         />
-        <main className="flex-1 px-14 py-11 max-w-[760px] flex flex-col">
+        <main className="flex-1 px-14 py-11 flex flex-col">
+          <CoverFlow
+            stations={stations ?? []}
+            selectedId={selectedId}
+            onSelect={setSelectedId}
+          />
+
           {!detail ? (
-            <div className="text-[#666]">Loading station…</div>
+            <div className="text-[#666] mt-8">Loading station…</div>
           ) : (
             <>
-              <NowPlaying detail={detail} state={state} />
+              <div className="max-w-[760px] w-full mt-6">
+                <NowPlaying detail={detail} state={state} />
 
-              <UpNext
-                items={
-                  state
-                    ? getUpcomingRecordings(
-                        {
-                          recordings: detail.recordings,
-                          totalDuration: detail.totalDuration,
-                        },
-                        state.recordingIndex,
-                        3,
-                      )
-                    : []
-                }
-              />
-
-              <button
-                onClick={() => {
-                  if (started) {
-                    playerRef.current.unload();
-                    setStarted(false);
-                  } else {
-                    setStarted(true);
+                <UpNext
+                  items={
+                    state
+                      ? getUpcomingRecordings(
+                          {
+                            recordings: detail.recordings,
+                            totalDuration: detail.totalDuration,
+                          },
+                          state.recordingIndex,
+                          3,
+                        )
+                      : []
                   }
-                }}
-                className="mt-8 px-6 py-3 rounded-lg border border-[#181818] bg-[#0f0f0f] hover:bg-[#141414] text-sm text-[#aaa] transition-colors self-start"
-              >
-                {started ? "Tune out" : "Tap to tune in"}
-              </button>
+                />
 
-              <div className="mt-auto pt-10">
+                <button
+                  onClick={() => {
+                    if (started) {
+                      playerRef.current.unload();
+                      setStarted(false);
+                    } else {
+                      setStarted(true);
+                    }
+                  }}
+                  className="mt-8 px-6 py-3 rounded-lg border border-[#181818] bg-[#0f0f0f] hover:bg-[#141414] text-sm text-[#aaa] transition-colors"
+                >
+                  {started ? "Tune out" : "Tap to tune in"}
+                </button>
+              </div>
+
+              <div className="mt-auto pt-10 max-w-[760px] w-full">
                 <SkipControls
                   color={detail.station.color}
                   skipDJ={skipDJ}
