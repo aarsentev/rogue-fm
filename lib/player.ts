@@ -72,9 +72,22 @@ export class Player {
     if (!this.howl) return;
     const pos = this.howl.seek();
     const current = typeof pos === "number" ? pos : 0;
-    if (Math.abs(current - offsetSec) > SYNC_THRESHOLD_SEC) {
+    // One-directional: only correct when we've fallen BEHIND the broadcast
+    // clock (buffering / backgrounded tab throttling). Never pull back —
+    // that would instantly undo a skip / fast-forward.
+    if (offsetSec - current > SYNC_THRESHOLD_SEC) {
       this.howl.seek(offsetSec);
     }
+  }
+
+  getPositionSec(): number | null {
+    if (!this.howl) return null;
+    const p = this.howl.seek();
+    return typeof p === "number" ? p : null;
+  }
+
+  seekTo(sec: number) {
+    this.howl?.seek(sec);
   }
 
   setMuted(muted: boolean) {
