@@ -2,13 +2,17 @@
 
 import { fmtTime, type StationDetail } from "@/lib/types";
 import type { ClockState } from "@/lib/broadcastClock";
+import { segmentLabel, type Seg } from "@/lib/skipLogic";
+import { SegmentRibbon } from "./SegmentRibbon";
 
 type Props = {
   detail: StationDetail;
   state: ClockState | null;
+  currentType: string | null;
+  segments: Seg[];
 };
 
-export function NowPlaying({ detail, state }: Props) {
+export function NowPlaying({ detail, state, currentType, segments }: Props) {
   const progress = state
     ? (state.offsetInRecording / state.recording.duration) * 100
     : 0;
@@ -40,7 +44,9 @@ export function NowPlaying({ detail, state }: Props) {
         <p className="text-[24px] font-medium mb-1 text-white truncate">
           {recordingName}
         </p>
-        <p className="text-[14px] text-[#666] mb-7">♫ Music</p>
+        <p className="text-[14px] text-[#666] mb-7">
+          {segmentLabel(currentType)}
+        </p>
 
         <div className="h-[3px] bg-[#1e1e1e] rounded mb-2">
           <div
@@ -62,6 +68,13 @@ export function NowPlaying({ detail, state }: Props) {
             {fmtTime(state?.recording.duration ?? 0)}
           </span>
         </div>
+
+        <SegmentRibbon
+          segments={segments}
+          duration={state?.recording.duration ?? 0}
+          positionSec={state?.offsetInRecording ?? 0}
+          accent={detail.station.color}
+        />
       </div>
     </>
   );

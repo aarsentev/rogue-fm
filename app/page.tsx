@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { getStationState, getUpcomingRecordings } from "@/lib/broadcastClock";
+import { getStationState } from "@/lib/broadcastClock";
 import { getPlayer } from "@/lib/player";
 import { useMediaSession } from "@/lib/mediaSession";
+import { skipTarget, segmentAt, type Seg } from "@/lib/skipLogic";
 import type { StationDetail, StationSummary } from "@/lib/types";
 import { Topbar } from "@/components/Topbar";
 import { Sidebar } from "@/components/Sidebar";
@@ -19,6 +20,7 @@ export default function Home() {
   const [started, setStarted] = useState(false);
   const [skipDJ, setSkipDJ] = useState(false);
   const [skipAds, setSkipAds] = useState(false);
+  const [segments, setSegments] = useState<Seg[]>([]);
   const [, setTick] = useState(0);
   const playerRef = useRef(getPlayer());
 
@@ -93,6 +95,49 @@ export default function Home() {
     onPrev: () => cycleStation(-1),
   });
 
+  const activeRecId = state?.recording.id ?? null;
+
+  // Load segments for whatever recording is currently on air.
+  useEffect(() => {
+    if (!activeRecId) {
+      setSegments([]);
+      return;
+    }
+    let cancelled = false;
+    fetch(`/api/recordings/${activeRecId}`)
+      .then((r) => r.json())
+      .then((d: { segments?: Seg[] }) => {
+        if (!cancelled) setSegments(d.segments ?? []);
+      })
+      .catch(() => {
+        if (!cancelled) setSegments([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [activeRecId]);
+
+  // Skip monitor: every 500ms, if the real playhead is inside a skippable
+  // segment, jump past it. Independent of the broadcast-clock resync.
+  useEffect(() => {
+    if (!started) return;
+    if (!skipDJ && !skipAds) return;
+    if (segments.length === 0) return;
+    const player = playerRef.current;
+    const id = setInterval(() => {
+      const pos = player.getPositionSec();
+      if (pos == null) return;
+      const target = skipTarget(segments, pos, { skipDJ, skipAds });
+      if (target != null) player.seekTo(target);
+    }, 500);
+    return () => clearInterval(id);
+  }, [started, skipDJ, skipAds, segments]);
+
+  const currentType =
+    state && segments.length
+      ? (segmentAt(segments, state.offsetInRecording)?.type ?? null)
+      : null;
+
   return (
     <div className="min-h-screen bg-[#080808] text-white flex flex-col">
       <Topbar />
@@ -115,21 +160,17 @@ export default function Home() {
           ) : (
             <>
               <div className="max-w-[760px] w-full mt-6">
-                <NowPlaying detail={detail} state={state} />
+                <NowPlaying
+                  detail={detail}
+                  state={state}
+                  currentType={currentType}
+                  segments={segments}
+                />
 
                 <UpNext
-                  items={
-                    state
-                      ? getUpcomingRecordings(
-                          {
-                            recordings: detail.recordings,
-                            totalDuration: detail.totalDuration,
-                          },
-                          state.recordingIndex,
-                          3,
-                        )
-                      : []
-                  }
+                  segments={segments}
+                  positionSec={state?.offsetInRecording ?? 0}
+                  hasSegmentData={segments.length > 0}
                 />
 
                 <button
