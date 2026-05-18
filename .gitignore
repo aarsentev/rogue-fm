@@ -49,3 +49,5 @@ dev.db-journal
 ml/.venv/
 ml/models/*.pkl
 __pycache__/
+ml/out.json
+ml/progress.log

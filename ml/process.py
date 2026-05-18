@@ -45,6 +45,52 @@ def log(*a):
     print(*a, file=sys.stderr, flush=True)
 
 
+def detect_talkover(segments, file_path, chroma_thr, perc_thr):
+    """
+    Heuristic: a speech ("unknown") segment with a musical bed underneath
+    (DJ talking over a song's intro/outro) is relabelled "talkover" so the
+    skip toggles leave it alone — skipping it would eat the song.
+
+    Per-segment features are logged so the thresholds can be calibrated
+    against real numbers. Pure heuristic, no training.
+    """
+    import librosa
+    import numpy as np
+
+    sr = 16000
+    y, _ = librosa.load(file_path, sr=sr, mono=True)
+    n = len(y)
+
+    flipped = 0
+    for s in segments:
+        if s["type"] != "unknown":
+            continue
+        a = max(0, int(s["startSec"] * sr))
+        b = min(n, int(s["endSec"] * sr))
+        clip = y[a:b]
+        if len(clip) < sr:  # < 1s, too short to judge
+            continue
+
+        harm, perc = librosa.effects.hpss(clip)
+        perc_rms = float(np.sqrt(np.mean(perc**2)))
+        chroma = librosa.feature.chroma_stft(y=clip, sr=sr)
+        # mean of the strongest pitch-class per frame: high & stable => music
+        chroma_peak = float(np.mean(np.max(chroma, axis=0)))
+
+        is_talkover = chroma_peak >= chroma_thr and perc_rms >= perc_thr
+        log(
+            f"[talkover] {s['startSec']:7.1f}-{s['endSec']:7.1f} "
+            f"chroma_peak={chroma_peak:.3f} perc_rms={perc_rms:.4f} "
+            f"-> {'TALKOVER' if is_talkover else 'speech'}"
+        )
+        if is_talkover:
+            s["type"] = "talkover"
+            flipped += 1
+
+    log(f"[talkover] reclassified {flipped} speech -> talkover")
+    return segments
+
+
 def smooth(segments: list[dict], min_seg_sec: float) -> list[dict]:
     """
     Collapse flicker at track/talk boundaries: any segment shorter than
@@ -85,6 +131,23 @@ def main() -> int:
         type=float,
         default=4.0,
         help="segments shorter than this are merged into the previous one",
+    )
+    parser.add_argument(
+        "--no-talkover",
+        action="store_true",
+        help="disable the speech-over-music (talkover) detection pass",
+    )
+    parser.add_argument(
+        "--talkover-chroma",
+        type=float,
+        default=0.55,
+        help="min mean chroma-peak for a speech seg to count as talkover",
+    )
+    parser.add_argument(
+        "--talkover-perc",
+        type=float,
+        default=0.015,
+        help="min percussive RMS for a speech seg to count as talkover",
     )
     args = parser.parse_args()
 
@@ -127,6 +190,22 @@ def main() -> int:
     log(f"[process] smoothed {before} -> {len(segments)} segments "
         f"(min_seg_sec={args.min_seg_sec})")
 
+    if not args.no_talkover:
+        segments = detect_talkover(
+            segments,
+            args.file,
+            args.talkover_chroma,
+            args.talkover_perc,
+        )
+        # re-merge any adjacent same-type runs created by relabelling
+        merged: list[dict] = []
+        for s in segments:
+            if merged and merged[-1]["type"] == s["type"]:
+                merged[-1]["endSec"] = s["endSec"]
+            else:
+                merged.append(s)
+        segments = merged
+
     if not segments:
         log("[process] no segments produced")
         json.dump(
@@ -137,8 +216,10 @@ def main() -> int:
 
     duration = segments[-1]["endSec"]
     music_n = sum(1 for s in segments if s["type"] == "music")
-    other_n = len(segments) - music_n
-    log(f"[process] result: {music_n} music, {other_n} speech/other")
+    talk_n = sum(1 for s in segments if s["type"] == "talkover")
+    speech_n = sum(1 for s in segments if s["type"] == "unknown")
+    log(f"[process] result: {music_n} music, {speech_n} speech, "
+        f"{talk_n} talkover")
 
     json.dump(
         {"id": args.id, "duration": round(duration, 3), "segments": segments},

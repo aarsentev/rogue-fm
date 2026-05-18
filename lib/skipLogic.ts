@@ -37,7 +37,9 @@ export function isSkippable(type: string, f: SkipFlags): boolean {
       return f.skipDJ || f.skipAds;
     case "music":
     case "jingle":
+    case "talkover":
     default:
+      // talkover = DJ over a song; skipping it would eat the music.
       return false;
   }
 }
@@ -68,6 +70,7 @@ const TYPE_LABEL: Record<string, string> = {
   ad: "📣 Ad",
   jingle: "🔔 Jingle",
   unknown: "🎙 Talk",
+  talkover: "🎤 Over music",
 };
 
 export function segmentLabel(type: string | null | undefined): string {

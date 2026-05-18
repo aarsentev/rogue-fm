@@ -8,6 +8,7 @@ const SEG_COLOR: Record<string, string> = {
   dj: "#2f6fb0",
   ad: "#c0392b",
   jingle: "#c9a227",
+  talkover: "#7d5fb0",
 };
 
 type Props = {
@@ -67,7 +68,14 @@ export function SegmentRibbon({
             className="inline-block w-2 h-2 rounded-[1px]"
             style={{ background: SEG_COLOR.unknown }}
           />
-          talk / unknown
+          talk
+        </span>
+        <span className="flex items-center gap-1">
+          <span
+            className="inline-block w-2 h-2 rounded-[1px]"
+            style={{ background: SEG_COLOR.talkover }}
+          />
+          over music
         </span>
         <span className="ml-auto text-[#2a2a2a]">
           {segments.length} segments
