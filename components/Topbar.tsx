@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export function Topbar() {
   return (
     <header className="px-8 py-4 border-b border-[#141414] flex items-center gap-3">
@@ -5,7 +7,13 @@ export function Topbar() {
       <span className="text-xs font-semibold tracking-[0.15em] text-[#666]">
         ROGUE FM
       </span>
-      <span className="ml-auto text-[11px] text-[#333]">
+      <Link
+        href="/library"
+        className="ml-auto text-[11px] text-[#666] hover:text-white"
+      >
+        Library
+      </Link>
+      <span className="text-[11px] text-[#333]">
         personal build · local files
       </span>
     </header>
