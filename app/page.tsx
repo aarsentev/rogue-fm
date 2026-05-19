@@ -24,6 +24,13 @@ export default function Home() {
   const [, setTick] = useState(0);
   const playerRef = useRef(getPlayer());
 
+  // Dev-only scrub: shift a local epoch override so the broadcast clock
+  // "time-travels" to a clicked position. Never persisted; prod stays live.
+  const DEV = process.env.NODE_ENV !== "production";
+  const [scrub, setScrub] = useState(false);
+  const [epochOverride, setEpochOverride] = useState<number | null>(null);
+  const epochOverrideRef = useRef<number | null>(null);
+
   useEffect(() => {
     fetch("/api/stations")
       .then((r) => r.json())
@@ -37,6 +44,8 @@ export default function Home() {
   useEffect(() => {
     if (!selectedId) return;
     setDetail(null);
+    epochOverrideRef.current = null;
+    setEpochOverride(null);
     fetch(`/api/stations/${selectedId}`)
       .then((r) => r.json())
       .then(setDetail)
@@ -55,7 +64,7 @@ export default function Home() {
     const evalAndSync = () => {
       const s = getStationState(
         { recordings: detail.recordings, totalDuration: detail.totalDuration },
-        detail.epoch,
+        epochOverrideRef.current ?? detail.epoch,
       );
       if (s) player.loadAndSync(s.recording.id, s.offsetInRecording);
     };
@@ -73,9 +82,22 @@ export default function Home() {
   const state = detail
     ? getStationState(
         { recordings: detail.recordings, totalDuration: detail.totalDuration },
-        detail.epoch,
+        epochOverride ?? detail.epoch,
       )
     : null;
+
+  const handleScrubSeek = (offsetSec: number) => {
+    if (!detail || !state) return;
+    let preceding = 0;
+    for (let i = 0; i < state.recordingIndex; i++) {
+      preceding += detail.recordings[i].duration;
+    }
+    const globalElapsed = preceding + offsetSec;
+    const newEpoch = Date.now() - globalElapsed * 1000;
+    epochOverrideRef.current = newEpoch;
+    setEpochOverride(newEpoch);
+    playerRef.current.seekTo(offsetSec);
+  };
 
   const cycleStation = (delta: number) => {
     if (!stations || !selectedId) return;
@@ -165,7 +187,21 @@ export default function Home() {
                   state={state}
                   currentType={currentType}
                   segments={segments}
+                  onSeek={scrub ? handleScrubSeek : undefined}
                 />
+
+                {DEV && (
+                  <button
+                    onClick={() => setScrub((v) => !v)}
+                    className="mt-3 text-[10px] tracking-[0.08em] px-2.5 py-1 rounded border transition-colors"
+                    style={{
+                      borderColor: scrub ? "#7d5fb0" : "#222",
+                      color: scrub ? "#7d5fb0" : "#555",
+                    }}
+                  >
+                    🛠 SCRUB {scrub ? "ON — click ribbon to jump" : "off"}
+                  </button>
+                )}
 
                 <UpNext
                   segments={segments}

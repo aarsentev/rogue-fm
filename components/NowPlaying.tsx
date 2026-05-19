@@ -10,9 +10,16 @@ type Props = {
   state: ClockState | null;
   currentType: string | null;
   segments: Seg[];
+  onSeek?: (sec: number) => void;
 };
 
-export function NowPlaying({ detail, state, currentType, segments }: Props) {
+export function NowPlaying({
+  detail,
+  state,
+  currentType,
+  segments,
+  onSeek,
+}: Props) {
   const progress = state
     ? (state.offsetInRecording / state.recording.duration) * 100
     : 0;
@@ -74,6 +81,7 @@ export function NowPlaying({ detail, state, currentType, segments }: Props) {
           duration={state?.recording.duration ?? 0}
           positionSec={state?.offsetInRecording ?? 0}
           accent={detail.station.color}
+          onSeek={onSeek}
         />
       </div>
     </>

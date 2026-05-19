@@ -16,6 +16,7 @@ type Props = {
   duration: number;
   positionSec: number;
   accent: string;
+  onSeek?: (sec: number) => void;
 };
 
 export function SegmentRibbon({
@@ -23,6 +24,7 @@ export function SegmentRibbon({
   duration,
   positionSec,
   accent,
+  onSeek,
 }: Props) {
   if (segments.length === 0 || duration <= 0) return null;
 
@@ -31,9 +33,21 @@ export function SegmentRibbon({
     Math.min(100, (positionSec / duration) * 100),
   );
 
+  const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!onSeek) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const frac = (e.clientX - rect.left) / rect.width;
+    onSeek(Math.max(0, Math.min(1, frac)) * duration);
+  };
+
   return (
     <div className="mt-3">
-      <div className="relative h-[6px] w-full rounded overflow-hidden bg-[#141414]">
+      <div
+        onClick={handleClick}
+        className={`relative h-[6px] w-full rounded overflow-hidden bg-[#141414] ${
+          onSeek ? "cursor-pointer h-[10px]" : ""
+        }`}
+      >
         {segments.map((s, i) => {
           const left = (s.startSec / duration) * 100;
           const width = ((s.endSec - s.startSec) / duration) * 100;
