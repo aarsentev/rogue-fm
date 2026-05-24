@@ -64,6 +64,7 @@ export async function GET(
       freq: station.freq,
       genre: station.genre,
       color: station.color,
+      logoPath: station.logoPath,
     },
     recordings: station.recordings,
     totalDuration,

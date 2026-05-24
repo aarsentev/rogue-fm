@@ -1,6 +1,6 @@
 "use client";
 
-import { useId } from "react";
+import { useId, useState } from "react";
 
 function hexToRgb(hex: string): [number, number, number] {
   const m = hex.replace("#", "");
@@ -35,6 +35,8 @@ type Props = {
   freq: string;
   name: string;
   color: string;
+  stationId?: string;
+  hasLogo?: boolean;
   size?: number;
   rounded?: number;
   className?: string;
@@ -44,11 +46,36 @@ export function Cover({
   freq,
   name,
   color,
+  stationId,
+  hasLogo,
   size = 200,
   rounded = 12,
   className,
 }: Props) {
   const uid = useId().replace(/[^a-zA-Z0-9]/g, "");
+  const [logoFailed, setLogoFailed] = useState(false);
+
+  if (hasLogo && stationId && !logoFailed) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={`/api/logo/${stationId}`}
+        alt={`${name} logo`}
+        width={size}
+        height={size}
+        onError={() => setLogoFailed(true)}
+        className={className}
+        style={{
+          width: size,
+          height: size,
+          objectFit: "cover",
+          borderRadius: rounded,
+          display: "block",
+          background: color,
+        }}
+      />
+    );
+  }
   const lighter = mix(color, 0.35, "white");
   const darker = mix(color, 0.55, "black");
 

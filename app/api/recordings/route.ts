@@ -12,6 +12,7 @@ export async function GET() {
       freq: true,
       genre: true,
       color: true,
+      logoPath: true,
       recordings: {
         orderBy: { sortOrder: "asc" },
         select: {
@@ -35,6 +36,7 @@ export async function GET() {
     freq: s.freq,
     genre: s.genre,
     color: s.color,
+    logoPath: s.logoPath,
     recordings: s.recordings.map((r) => ({
       id: r.id,
       filename: r.filename,

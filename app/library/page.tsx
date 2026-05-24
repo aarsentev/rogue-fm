@@ -23,6 +23,7 @@ type Stn = {
   freq: string;
   genre?: string;
   color: string;
+  logoPath?: string | null;
   recordings: Rec[];
 };
 
@@ -46,6 +47,61 @@ function StatusBadge({ status, processing }: { status: string; processing: boole
     >
       {s}
     </span>
+  );
+}
+
+function LogoCell({
+  station,
+  onUpload,
+  onClear,
+}: {
+  station: Stn;
+  onUpload: (f: File) => void;
+  onClear: () => void;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  return (
+    <div className="flex items-center gap-1.5">
+      <button
+        onClick={() => inputRef.current?.click()}
+        title="Upload logo"
+        className="w-7 h-7 rounded-md overflow-hidden border border-[#222] cursor-pointer flex items-center justify-center"
+        style={{ background: station.color }}
+      >
+        {station.logoPath ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={`/api/logo/${station.id}?t=${station.logoPath}`}
+            alt=""
+            width={28}
+            height={28}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <span className="text-[8px] text-white/70">{station.freq}</span>
+        )}
+      </button>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/png,image/jpeg,image/webp,image/svg+xml"
+        className="hidden"
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f) onUpload(f);
+          e.target.value = "";
+        }}
+      />
+      {station.logoPath && (
+        <button
+          onClick={onClear}
+          title="Remove logo"
+          className="text-[10px] text-[#3a3a3a] hover:text-[#c0392b]"
+        >
+          ×
+        </button>
+      )}
+    </div>
   );
 }
 
@@ -206,6 +262,32 @@ export default function Library() {
     load();
   };
 
+  const uploadLogo = async (id: string, file: File) => {
+    setError(null);
+    const fd = new FormData();
+    fd.append("file", file);
+    const res = await fetch(`/api/stations/${id}/logo`, {
+      method: "POST",
+      body: fd,
+    });
+    if (!res.ok) {
+      const d = await res.json().catch(() => ({}));
+      setError(d.error ?? "logo upload failed");
+      return;
+    }
+    load();
+  };
+
+  const clearLogo = async (id: string) => {
+    setError(null);
+    const res = await fetch(`/api/stations/${id}/logo`, { method: "DELETE" });
+    if (!res.ok) {
+      setError("failed to clear logo");
+      return;
+    }
+    load();
+  };
+
   const deleteStation = async (st: Stn) => {
     const n = st.recordings.length;
     if (
@@ -282,10 +364,11 @@ export default function Library() {
                   submitLabel="Save"
                 />
               ) : (
-                <div className="flex items-center gap-2.5 mb-3">
-                  <span
-                    className="w-2.5 h-2.5 rounded-sm"
-                    style={{ background: st.color }}
+                <div className="flex items-center gap-3 mb-3">
+                  <LogoCell
+                    station={st}
+                    onUpload={(f) => uploadLogo(st.id, f)}
+                    onClear={() => clearLogo(st.id)}
                   />
                   <h2 className="text-[15px] font-semibold">{st.name}</h2>
                   <span className="text-[11px] text-[#444]">
@@ -342,6 +425,14 @@ export default function Library() {
                           status={r.processingStatus}
                           processing={r.processing}
                         />
+                        {r.processingStatus === "done" && (
+                          <Link
+                            href={`/editor/${r.id}`}
+                            className="text-[11px] px-3 py-1.5 rounded border border-[#222] text-[#999] hover:text-white hover:border-[#333]"
+                          >
+                            Edit
+                          </Link>
+                        )}
                         <button
                           disabled={busy}
                           onClick={() => process(r.id)}

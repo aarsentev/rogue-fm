@@ -44,6 +44,8 @@ next-env.d.ts
 
 storage/recordings/*
 !storage/recordings/.gitkeep
+storage/logos/*
+!storage/logos/.gitkeep
 dev.db
 dev.db-journal
 ml/.venv/

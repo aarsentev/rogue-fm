@@ -112,6 +112,8 @@ export function CoverFlow({ stations, selectedId, onSelect }: Props) {
                 freq={s.freq}
                 name={s.name}
                 color={s.color}
+                stationId={s.id}
+                hasLogo={Boolean(s.logoPath)}
                 size={CENTER_SIZE}
                 rounded={16}
               />

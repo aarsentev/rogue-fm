@@ -22,6 +22,7 @@ export async function GET() {
       freq: true,
       genre: true,
       color: true,
+      logoPath: true,
       sortOrder: true,
     },
   });

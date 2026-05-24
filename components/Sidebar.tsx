@@ -28,20 +28,35 @@ export function Sidebar({ stations, selectedId, activeRecordingName, onSelect }:
               borderLeftColor: active ? s.color : "transparent",
             }}
           >
-            <div
-              className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 border"
-              style={{
-                background: active ? s.color + "20" : "#141414",
-                borderColor: active ? s.color + "33" : "#1a1a1a",
-              }}
-            >
-              <span
-                className="text-[9px] font-bold tracking-wider"
-                style={{ color: active ? s.color : "#444" }}
+            {s.logoPath ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={`/api/logo/${s.id}`}
+                alt=""
+                width={36}
+                height={36}
+                className="rounded-lg shrink-0 object-cover"
+                style={{
+                  background: s.color,
+                  border: `1px solid ${active ? s.color + "55" : "#1a1a1a"}`,
+                }}
+              />
+            ) : (
+              <div
+                className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 border"
+                style={{
+                  background: active ? s.color + "20" : "#141414",
+                  borderColor: active ? s.color + "33" : "#1a1a1a",
+                }}
               >
-                {s.freq}
-              </span>
-            </div>
+                <span
+                  className="text-[9px] font-bold tracking-wider"
+                  style={{ color: active ? s.color : "#444" }}
+                >
+                  {s.freq}
+                </span>
+              </div>
+            )}
             <div className="overflow-hidden flex-1">
               <p
                 className="text-[13px] font-medium m-0 truncate"

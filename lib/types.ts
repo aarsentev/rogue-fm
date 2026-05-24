@@ -6,6 +6,7 @@ export type StationSummary = {
   freq: string;
   genre: string;
   color: string;
+  logoPath?: string | null;
   sortOrder: number;
 };
 
@@ -16,6 +17,7 @@ export type StationDetail = {
     freq: string;
     genre: string;
     color: string;
+    logoPath?: string | null;
   };
   recordings: Recording[];
   totalDuration: number;
