@@ -44,7 +44,11 @@ export function UpNext({ segments, positionSec, hasSegmentData }: Props) {
         Up next
       </p>
       {upcoming.map((s, i) => {
-        const name = s.label?.trim() || segmentLabel(s.type);
+        const hasTrack = s.type === "music" || s.type === "talkover";
+        const name =
+          hasTrack && s.trackTitle
+            ? `${s.trackTitle}${s.trackArtist ? " — " + s.trackArtist : ""}`
+            : s.label?.trim() || segmentLabel(s.type);
         return (
           <div
             key={`${s.startSec}-${i}`}

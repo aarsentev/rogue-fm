@@ -18,7 +18,7 @@ export function SkipControls({
   onToggleAds,
 }: Props) {
   const items = [
-    { label: "Skip DJ commentary", val: skipDJ, onClick: onToggleDJ },
+    { label: "Skip comments", val: skipDJ, onClick: onToggleDJ },
     { label: "Skip ads", val: skipAds, onClick: onToggleAds },
   ];
 

@@ -5,6 +5,8 @@ export type Seg = {
   endSec: number;
   type: string;
   label?: string | null;
+  trackTitle?: string | null;
+  trackArtist?: string | null;
 };
 
 /**
@@ -66,12 +68,22 @@ export function skipTarget(
 
 const TYPE_LABEL: Record<string, string> = {
   music: "♫ Music",
-  dj: "🎙 DJ",
+  dj: "💬 Comment",
   ad: "📣 Ad",
   jingle: "🔔 Jingle",
-  unknown: "🎙 Talk",
   talkover: "🎤 Over music",
+  unknown: "❔ TBD",
 };
+
+export const SEGMENT_TYPES = [
+  "music",
+  "dj",
+  "ad",
+  "jingle",
+  "talkover",
+  "unknown",
+] as const;
+export type SegmentType = (typeof SEGMENT_TYPES)[number];
 
 export function segmentLabel(type: string | null | undefined): string {
   if (!type) return "♫ Music";
