@@ -13,6 +13,7 @@ model Station {
   freq       String
   genre      String
   color      String
+  logoPath   String?
   sortOrder  Int         @default(0)
   createdAt  DateTime    @default(now())
   recordings Recording[]
@@ -43,6 +44,10 @@ model Segment {
   type           String
   confidence     Float     @default(1.0)
   label          String?
+  trackTitle     String?
+  trackArtist    String?
+  trackAlbum     String?
+  trackYear      Int?
   manuallyEdited Boolean   @default(false)
   recording      Recording @relation(fields: [recordingId], references: [id], onDelete: Cascade)
 
