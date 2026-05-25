@@ -75,6 +75,19 @@ const TYPE_LABEL: Record<string, string> = {
   unknown: "❔ TBD",
 };
 
+export const SEGMENT_COLORS: Record<string, string> = {
+  music: "#2f7d4a", // green
+  dj: "#2f6fb0", // blue
+  ad: "#c0392b", // red
+  jingle: "#c9a227", // amber
+  talkover: "#7d5fb0", // purple
+  unknown: "#555555", // neutral grey
+};
+
+export function segmentColor(type: string): string {
+  return SEGMENT_COLORS[type] ?? "#444";
+}
+
 export const SEGMENT_TYPES = [
   "music",
   "dj",

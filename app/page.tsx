@@ -57,6 +57,17 @@ export default function Home() {
     return () => clearInterval(id);
   }, []);
 
+  // Stop the broadcast when the home page unmounts (navigating to /library
+  // or /editor). Otherwise the Howler singleton keeps playing in the
+  // background and overlays the editor's own audio. To be replaced by a
+  // global mini-player that persists state across routes (TBD task #8).
+  useEffect(() => {
+    const player = playerRef.current;
+    return () => {
+      player.unload();
+    };
+  }, []);
+
   useEffect(() => {
     if (!started || !detail) return;
     const player = playerRef.current;

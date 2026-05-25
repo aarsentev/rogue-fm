@@ -1,15 +1,10 @@
 "use client";
 
-import type { Seg } from "@/lib/skipLogic";
-
-const SEG_COLOR: Record<string, string> = {
-  music: "#2c2c2c",
-  unknown: "#c0392b",
-  dj: "#2f6fb0",
-  ad: "#c0392b",
-  jingle: "#c9a227",
-  talkover: "#7d5fb0",
-};
+import {
+  SEGMENT_COLORS as SEG_COLOR,
+  segmentLabel,
+  type Seg,
+} from "@/lib/skipLogic";
 
 type Props = {
   segments: Seg[];
@@ -18,6 +13,16 @@ type Props = {
   accent: string;
   onSeek?: (sec: number) => void;
 };
+
+// Order legend entries the same way across recordings so the layout is stable.
+const LEGEND_ORDER = [
+  "music",
+  "talkover",
+  "dj",
+  "ad",
+  "jingle",
+  "unknown",
+] as const;
 
 export function SegmentRibbon({
   segments,
@@ -40,6 +45,10 @@ export function SegmentRibbon({
     onSeek(Math.max(0, Math.min(1, frac)) * duration);
   };
 
+  const presentTypes = LEGEND_ORDER.filter((t) =>
+    segments.some((s) => s.type === t),
+  );
+
   return (
     <div className="mt-3">
       <div
@@ -60,7 +69,7 @@ export function SegmentRibbon({
                 width: `${width}%`,
                 background: SEG_COLOR[s.type] ?? "#2c2c2c",
               }}
-              title={`${s.type}  ${s.startSec.toFixed(0)}–${s.endSec.toFixed(0)}s`}
+              title={`${segmentLabel(s.type)}  ${s.startSec.toFixed(0)}–${s.endSec.toFixed(0)}s`}
             />
           );
         })}
@@ -69,28 +78,16 @@ export function SegmentRibbon({
           style={{ left: `${playheadPct}%`, background: accent }}
         />
       </div>
-      <div className="flex gap-4 mt-2 text-[10px] text-[#3a3a3a]">
-        <span className="flex items-center gap-1">
-          <span
-            className="inline-block w-2 h-2 rounded-[1px]"
-            style={{ background: SEG_COLOR.music }}
-          />
-          music
-        </span>
-        <span className="flex items-center gap-1">
-          <span
-            className="inline-block w-2 h-2 rounded-[1px]"
-            style={{ background: SEG_COLOR.unknown }}
-          />
-          talk
-        </span>
-        <span className="flex items-center gap-1">
-          <span
-            className="inline-block w-2 h-2 rounded-[1px]"
-            style={{ background: SEG_COLOR.talkover }}
-          />
-          over music
-        </span>
+      <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-[10px] text-[#3a3a3a]">
+        {presentTypes.map((t) => (
+          <span key={t} className="flex items-center gap-1">
+            <span
+              className="inline-block w-2 h-2 rounded-[1px]"
+              style={{ background: SEG_COLOR[t] }}
+            />
+            {segmentLabel(t).replace(/^\W+\s*/, "").toLowerCase()}
+          </span>
+        ))}
         <span className="ml-auto text-[#2a2a2a]">
           {segments.length} segments
         </span>
