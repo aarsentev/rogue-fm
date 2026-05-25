@@ -4,7 +4,12 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { use as usePromise } from "react";
 import Link from "next/link";
 import { fmtTime } from "@/lib/types";
-import { SEGMENT_TYPES, segmentLabel } from "@/lib/skipLogic";
+import {
+  SEGMENT_COLORS,
+  SEGMENT_TYPES,
+  segmentColor,
+  segmentLabel,
+} from "@/lib/skipLogic";
 
 type Seg = {
   id: string;
@@ -28,17 +33,31 @@ type Recording = {
   segments: Seg[];
 };
 
-const SEG_COLOR: Record<string, string> = {
-  music: "#2c2c2c",
-  dj: "#2f6fb0",
-  ad: "#c0392b",
-  jingle: "#c9a227",
-  talkover: "#7d5fb0",
-  unknown: "#555555",
-};
+const SEG_COLOR = SEGMENT_COLORS;
 
 function regionColor(type: string) {
-  return (SEG_COLOR[type] ?? "#444") + "66"; // ~40% alpha
+  return segmentColor(type) + "66"; // ~40% alpha for waveform regions
+}
+
+function fmtTimeMs(secs: number): string {
+  if (!isFinite(secs) || secs < 0) return "0:00.0";
+  const m = Math.floor(secs / 60);
+  const s = secs - m * 60;
+  return `${m}:${s.toFixed(1).padStart(4, "0")}`;
+}
+
+// Zoom slider operates in log space so movement feels uniform — without
+// this, going from 2 px/s to 400 px/s spends 90% of the slider on the last
+// 10% of perceived change.
+const ZOOM_MIN = 0.5;
+const ZOOM_MAX = 400;
+const LOG_MIN = Math.log(ZOOM_MIN);
+const LOG_MAX = Math.log(ZOOM_MAX);
+function sliderToZoom(s: number): number {
+  return Math.exp(LOG_MIN + (s / 100) * (LOG_MAX - LOG_MIN));
+}
+function zoomToSlider(z: number): number {
+  return ((Math.log(z) - LOG_MIN) / (LOG_MAX - LOG_MIN)) * 100;
 }
 
 export default function EditorPage({
@@ -52,6 +71,12 @@ export default function EditorPage({
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [error, setError] = useState<string | null>(null);
   const [zoom, setZoom] = useState(2); // pixels per second; ~2 fits an hour
+  const [playhead, setPlayhead] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [visible, setVisible] = useState<{ start: number; end: number }>({
+    start: 0,
+    end: 0,
+  });
 
   const waveformRef = useRef<HTMLDivElement>(null);
   const wsRef = useRef<unknown>(null);
@@ -101,9 +126,14 @@ export default function EditorPage({
     };
 
     (async () => {
-      const [{ default: WaveSurfer }, RegionsMod] = await Promise.all([
+      const [
+        { default: WaveSurfer },
+        RegionsMod,
+        HoverMod,
+      ] = await Promise.all([
         import("wavesurfer.js"),
         import("wavesurfer.js/dist/plugins/regions.esm.js"),
+        import("wavesurfer.js/dist/plugins/hover.esm.js"),
       ]);
       if (disposed || !waveformRef.current) return;
 
@@ -119,15 +149,50 @@ export default function EditorPage({
         normalize: true,
         minPxPerSec: zoom,
         autoScroll: true,
-        autoCenter: true,
+        // Don't pull the view back to the playhead during playback — that
+        // fights manual panning. User opts in via "Play selected" / clicks.
+        autoCenter: false,
         hideScrollbar: false,
       });
       const RegionsPlugin = (RegionsMod as { default: { create: () => unknown } })
         .default;
       const regions = ws.registerPlugin(RegionsPlugin.create()) as RegionsApi;
 
+      // Hover: time tooltip under the cursor while scrubbing the waveform.
+      const Hover = (
+        HoverMod as {
+          default: { create: (o: Record<string, unknown>) => unknown };
+        }
+      ).default;
+      ws.registerPlugin(
+        Hover.create({
+          lineColor: "#888",
+          lineWidth: 1,
+          labelBackground: "#111",
+          labelColor: "#ddd",
+          labelSize: "11px",
+        }),
+      );
+
       wsRef.current = ws;
       regionsApiRef.current = regions;
+
+      ws.on("timeupdate", (...args: unknown[]) => {
+        const t = args[0] as number;
+        setPlayhead(t);
+      });
+      ws.on("play", () => setIsPlaying(true));
+      ws.on("pause", () => setIsPlaying(false));
+      ws.on("finish", () => setIsPlaying(false));
+      ws.on("scroll", (...args: unknown[]) => {
+        const start = args[0] as number;
+        const end = args[1] as number;
+        setVisible({ start, end });
+      });
+      ws.on("decode", () => {
+        const dur = (ws as { getDuration: () => number }).getDuration();
+        setVisible({ start: 0, end: dur });
+      });
 
       // Draw regions once the waveform is decoded so positions align.
       ws.on("decode", () => {
@@ -189,15 +254,20 @@ export default function EditorPage({
   }, [selectedId, rec, zoom]);
 
   const zoomToSelected = () => {
-    if (!selected || !waveformRef.current || !wsRef.current) return;
-    const ws = wsRef.current as { setTime: (s: number) => void };
+    if (!selected || !waveformRef.current) return;
     const dur = selected.endSec - selected.startSec;
     const width = waveformRef.current.clientWidth || 800;
     // fit the selected segment to ~80% of the visible width
     const target = Math.max(2, Math.min(400, (width * 0.8) / dur));
     setZoom(target);
-    // re-centre on the segment
-    setTimeout(() => ws.setTime((selected.startSec + selected.endSec) / 2), 50);
+    // After the zoom effect runs (next tick), scroll the view to centre
+    // the segment WITHOUT touching the playhead — playback stays put.
+    setTimeout(() => {
+      const ws = wsRef.current as { setScroll?: (px: number) => void } | null;
+      if (!ws?.setScroll) return;
+      const center = (selected.startSec + selected.endSec) / 2;
+      ws.setScroll(Math.max(0, center * target - width / 2));
+    }, 60);
   };
 
   const fitWhole = () => {
@@ -328,6 +398,51 @@ export default function EditorPage({
     }
   };
 
+  // Keep refs so the keydown listener (attached once) calls the latest fn.
+  const splitRef = useRef<() => void>(() => {});
+  const deleteRef = useRef<(id: string) => void>(() => {});
+  const selectedIdRef = useRef<string | null>(null);
+  selectedIdRef.current = selectedId;
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const tag = (
+        document.activeElement?.tagName ?? ""
+      ).toLowerCase();
+      if (tag === "input" || tag === "textarea" || tag === "select") return;
+      const ws = wsRef.current as
+        | {
+            playPause: () => void;
+            getCurrentTime: () => number;
+            setTime: (s: number) => void;
+          }
+        | null;
+      if (e.code === "Space") {
+        e.preventDefault();
+        ws?.playPause();
+      } else if (e.key === "s" || e.key === "S") {
+        e.preventDefault();
+        splitRef.current();
+      } else if (
+        (e.key === "Delete" || e.key === "Backspace") &&
+        selectedIdRef.current
+      ) {
+        e.preventDefault();
+        deleteRef.current(selectedIdRef.current);
+      } else if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+        if (!ws) return;
+        e.preventDefault();
+        const step = e.shiftKey ? 5 : 0.5;
+        const t = ws.getCurrentTime();
+        ws.setTime(
+          e.key === "ArrowLeft" ? Math.max(0, t - step) : t + step,
+        );
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
   const trimTail = async () => {
     if (!rec) return;
     const lastEnd = rec.segments.reduce(
@@ -390,6 +505,10 @@ export default function EditorPage({
     }
   };
 
+  // Sync action refs so the global keydown listener calls the latest closures.
+  splitRef.current = splitAtCursor;
+  deleteRef.current = deleteSegment;
+
   return (
     <div className="min-h-screen bg-[#080808] text-white">
       <header className="px-8 py-4 border-b border-[#141414] flex items-center gap-4">
@@ -421,6 +540,34 @@ export default function EditorPage({
           <p className="text-[12px] text-[#c0392b] mb-3">{error}</p>
         )}
 
+        {(() => {
+          if (!rec) return null;
+          const containerW = waveformRef.current?.clientWidth ?? 0;
+          const fitZoom = containerW > 0 ? containerW / rec.duration : 0;
+          const showOverview =
+            containerW > 0 && zoom > fitZoom * 1.1 && visible.end > 0;
+          return showOverview ? (
+            <Overview
+              segments={rec.segments}
+              duration={rec.duration}
+              visStart={visible.start}
+              visEnd={visible.end}
+              onSeekFrac={(frac) => {
+                const ws = wsRef.current as {
+                  setScroll?: (px: number) => void;
+                } | null;
+                if (!ws?.setScroll) return;
+                const totalPx = rec.duration * zoom;
+                const target = Math.max(
+                  0,
+                  Math.min(totalPx - containerW, frac * totalPx - containerW / 2),
+                );
+                ws.setScroll(target);
+              }}
+            />
+          ) : null;
+        })()}
+
         <div
           ref={waveformRef}
           className="rounded-lg border border-[#181818] bg-[#0d0d0d] overflow-hidden"
@@ -432,17 +579,22 @@ export default function EditorPage({
               const ws = wsRef.current as { playPause?: () => void } | null;
               ws?.playPause?.();
             }}
-            className="px-3 py-1.5 rounded border border-[#222] text-[#999] hover:text-white"
+            className="w-9 h-9 rounded border border-[#222] text-[#ccc] hover:text-white hover:border-[#444] text-[14px] leading-none"
+            title={isPlaying ? "Pause (space)" : "Play (space)"}
           >
-            Play / Pause
+            {isPlaying ? "■" : "▶"}
           </button>
           <button
             disabled={!selected}
             onClick={playSelection}
-            className="px-3 py-1.5 rounded border border-[#222] text-[#999] hover:text-white disabled:opacity-30"
+            className="w-9 h-9 rounded border border-[#222] text-[#999] hover:text-white hover:border-[#444] disabled:opacity-30 text-[14px] leading-none"
+            title="Play selected segment"
           >
-            Play selected
+            ▶|
           </button>
+          <span className="font-mono text-[12px] text-[#aaa] tabular-nums w-20 text-center">
+            {fmtTimeMs(playhead)}
+          </span>
           <button
             onClick={splitAtCursor}
             className="px-3 py-1.5 rounded border border-[#2f6fb0] text-[#2f6fb0] hover:bg-[#10141a]"
@@ -461,11 +613,13 @@ export default function EditorPage({
             </button>
             <input
               type="range"
-              min={0.5}
-              max={400}
+              min={0}
+              max={100}
               step={0.5}
-              value={zoom}
-              onChange={(e) => setZoom(parseFloat(e.target.value))}
+              value={zoomToSlider(zoom)}
+              onChange={(e) =>
+                setZoom(sliderToZoom(parseFloat(e.target.value)))
+              }
               className="w-40 accent-[#666]"
               title={`${zoom.toFixed(1)} px/sec`}
             />
@@ -516,6 +670,14 @@ export default function EditorPage({
           </span>
         </div>
 
+        <p className="mt-1.5 text-[10px] text-[#333] tracking-[0.05em]">
+          keys: <kbd className="text-[#666]">space</kbd> play ·{" "}
+          <kbd className="text-[#666]">S</kbd> split ·{" "}
+          <kbd className="text-[#666]">del</kbd> delete sel ·{" "}
+          <kbd className="text-[#666]">← →</kbd> nudge 0.5s ·{" "}
+          <kbd className="text-[#666]">⇧← ⇧→</kbd> nudge 5s
+        </p>
+
         <div className="mt-8 grid grid-cols-[1fr_320px] gap-8">
           {/* segment list */}
           <SegmentList
@@ -540,6 +702,56 @@ export default function EditorPage({
           )}
         </div>
       </main>
+    </div>
+  );
+}
+
+function Overview({
+  segments,
+  duration,
+  visStart,
+  visEnd,
+  onSeekFrac,
+}: {
+  segments: Seg[];
+  duration: number;
+  visStart: number;
+  visEnd: number;
+  onSeekFrac: (frac: number) => void;
+}) {
+  if (duration <= 0) return null;
+  const vLeftPct = Math.max(0, (visStart / duration) * 100);
+  const vWidthPct = Math.max(
+    1,
+    Math.min(100 - vLeftPct, ((visEnd - visStart) / duration) * 100),
+  );
+
+  return (
+    <div
+      onClick={(e) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        onSeekFrac(
+          Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width)),
+        );
+      }}
+      className="relative h-7 mb-2 rounded border border-[#181818] bg-[#0a0a0a] overflow-hidden cursor-pointer"
+      title="Click to jump"
+    >
+      {segments.map((s, i) => (
+        <div
+          key={`${s.id ?? i}`}
+          className="absolute top-0 h-full"
+          style={{
+            left: `${(s.startSec / duration) * 100}%`,
+            width: `${((s.endSec - s.startSec) / duration) * 100}%`,
+            background: segmentColor(s.type) + "cc",
+          }}
+        />
+      ))}
+      <div
+        className="absolute top-0 h-full border-l border-r border-white/70 bg-white/15 pointer-events-none"
+        style={{ left: `${vLeftPct}%`, width: `${vWidthPct}%` }}
+      />
     </div>
   );
 }
