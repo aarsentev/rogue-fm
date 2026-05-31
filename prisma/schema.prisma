@@ -9,6 +9,7 @@ datasource db {
 
 model Station {
   id         String      @id @default(cuid())
+  slug       String?     @unique
   name       String
   freq       String
   genre      String
@@ -22,6 +23,7 @@ model Station {
 model Recording {
   id               String    @id @default(cuid())
   stationId        String
+  slug             String?
   filename         String
   displayName      String?
   duration         Float
@@ -33,6 +35,7 @@ model Recording {
   station          Station   @relation(fields: [stationId], references: [id], onDelete: Cascade)
   segments         Segment[]
 
+  @@unique([stationId, slug])
   @@index([stationId, sortOrder])
 }
 
