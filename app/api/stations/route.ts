@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { uniqueStationSlug } from "@/lib/slug";
 import { z } from "zod";
 
 export const dynamic = "force-dynamic";
@@ -18,6 +19,7 @@ export async function GET() {
     orderBy: { sortOrder: "asc" },
     select: {
       id: true,
+      slug: true,
       name: true,
       freq: true,
       genre: true,
@@ -50,11 +52,13 @@ export async function POST(req: Request) {
     select: { sortOrder: true },
   });
   const sortOrder = (last?.sortOrder ?? -1) + 1;
+  const slug = await uniqueStationSlug(parsed.data.name);
 
   const station = await prisma.station.create({
-    data: { ...parsed.data, sortOrder },
+    data: { ...parsed.data, sortOrder, slug },
     select: {
       id: true,
+      slug: true,
       name: true,
       freq: true,
       genre: true,

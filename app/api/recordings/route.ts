@@ -8,6 +8,7 @@ export async function GET() {
     orderBy: { sortOrder: "asc" },
     select: {
       id: true,
+      slug: true,
       name: true,
       freq: true,
       genre: true,
@@ -17,6 +18,7 @@ export async function GET() {
         orderBy: { sortOrder: "asc" },
         select: {
           id: true,
+          slug: true,
           filename: true,
           displayName: true,
           duration: true,
@@ -32,6 +34,7 @@ export async function GET() {
 
   const result = stations.map((s) => ({
     id: s.id,
+    slug: s.slug,
     name: s.name,
     freq: s.freq,
     genre: s.genre,
@@ -39,6 +42,7 @@ export async function GET() {
     logoPath: s.logoPath,
     recordings: s.recordings.map((r) => ({
       id: r.id,
+      slug: r.slug,
       filename: r.filename,
       displayName: r.displayName,
       duration: r.duration,

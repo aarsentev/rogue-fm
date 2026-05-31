@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { uniqueRecordingSlug } from "@/lib/slug";
 import { createWriteStream, mkdirSync } from "node:fs";
 import { unlink } from "node:fs/promises";
 import { Readable } from "node:stream";
@@ -44,10 +45,12 @@ export async function POST(req: Request) {
     select: { sortOrder: true },
   });
   const sortOrder = (last?.sortOrder ?? -1) + 1;
+  const slug = await uniqueRecordingSlug(displayName, stationId);
 
   const rec = await prisma.recording.create({
     data: {
       stationId,
+      slug,
       filename: "uploading",
       displayName,
       duration: 0,
