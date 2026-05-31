@@ -63,9 +63,10 @@ function zoomToSlider(z: number): number {
 export default function EditorPage({
   params,
 }: {
-  params: Promise<{ recordingId: string }>;
+  params: Promise<{ stationSlug: string; recordingSlug: string }>;
 }) {
-  const { recordingId } = usePromise(params);
+  const { stationSlug, recordingSlug } = usePromise(params);
+  const [recordingId, setRecordingId] = useState<string | null>(null);
   const [rec, setRec] = useState<Recording | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
@@ -84,19 +85,32 @@ export default function EditorPage({
   const segmentsRef = useRef<Seg[]>([]);
   segmentsRef.current = rec?.segments ?? [];
 
-  // Load recording + segments.
+  // Resolve the slug pair to the recording id, then load the detail.
   useEffect(() => {
     let cancelled = false;
-    fetch(`/api/recordings/${recordingId}`)
-      .then((r) => r.json())
-      .then((d: Recording) => {
+    setRec(null);
+    setRecordingId(null);
+    (async () => {
+      try {
+        const lookup = await fetch(
+          `/api/lookup/${encodeURIComponent(stationSlug)}/${encodeURIComponent(recordingSlug)}`,
+        );
+        const ld = await lookup.json();
+        if (!lookup.ok || !ld.recordingId)
+          throw new Error(ld.error ?? "recording not found");
+        if (cancelled) return;
+        setRecordingId(ld.recordingId);
+        const r = await fetch(`/api/recordings/${ld.recordingId}`);
+        const d = (await r.json()) as Recording;
         if (!cancelled) setRec(d);
-      })
-      .catch((e) => !cancelled && setError(String(e)));
+      } catch (e) {
+        if (!cancelled) setError(String(e));
+      }
+    })();
     return () => {
       cancelled = true;
     };
-  }, [recordingId]);
+  }, [stationSlug, recordingSlug]);
 
   // Init wavesurfer once we have the element + recording.
   useEffect(() => {

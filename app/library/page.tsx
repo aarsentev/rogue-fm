@@ -6,6 +6,7 @@ import { fmtTime } from "@/lib/types";
 
 type Rec = {
   id: string;
+  slug?: string | null;
   filename: string;
   displayName: string | null;
   duration: number;
@@ -19,6 +20,7 @@ type Rec = {
 
 type Stn = {
   id: string;
+  slug?: string | null;
   name: string;
   freq: string;
   genre?: string;
@@ -425,9 +427,9 @@ export default function Library() {
                           status={r.processingStatus}
                           processing={r.processing}
                         />
-                        {r.processingStatus === "done" && (
+                        {r.processingStatus === "done" && st.slug && r.slug && (
                           <Link
-                            href={`/editor/${r.id}`}
+                            href={`/editor/${st.slug}/${r.slug}`}
                             className="text-[11px] px-3 py-1.5 rounded border border-[#222] text-[#999] hover:text-white hover:border-[#333]"
                           >
                             Edit
