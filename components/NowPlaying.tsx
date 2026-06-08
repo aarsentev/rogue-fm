@@ -8,7 +8,7 @@ import { SegmentRibbon } from "./SegmentRibbon";
 type Props = {
   detail: StationDetail;
   state: ClockState | null;
-  currentType: string | null;
+  currentSegment: Seg | null;
   segments: Seg[];
   onSeek?: (sec: number) => void;
 };
@@ -16,7 +16,7 @@ type Props = {
 export function NowPlaying({
   detail,
   state,
-  currentType,
+  currentSegment,
   segments,
   onSeek,
 }: Props) {
@@ -26,6 +26,15 @@ export function NowPlaying({
 
   const recordingName =
     state?.recording.displayName ?? state?.recording.filename ?? "—";
+
+  const hasTrack =
+    currentSegment?.type === "music" || currentSegment?.type === "talkover";
+  const trackTitle = hasTrack ? currentSegment?.trackTitle?.trim() : null;
+  const trackArtist = hasTrack ? currentSegment?.trackArtist?.trim() : null;
+
+  const subtitle = trackTitle
+    ? trackTitle + (trackArtist ? ` — ${trackArtist}` : "")
+    : segmentLabel(currentSegment?.type ?? null);
 
   return (
     <>
@@ -51,9 +60,7 @@ export function NowPlaying({
         <p className="text-[24px] font-medium mb-1 text-white truncate">
           {recordingName}
         </p>
-        <p className="text-[14px] text-[#666] mb-7">
-          {segmentLabel(currentType)}
-        </p>
+        <p className="text-[14px] text-[#666] mb-7 truncate">{subtitle}</p>
 
         <div className="h-[3px] bg-[#1e1e1e] rounded mb-2">
           <div

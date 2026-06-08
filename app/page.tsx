@@ -166,9 +166,9 @@ export default function Home() {
     return () => clearInterval(id);
   }, [started, skipDJ, skipAds, segments]);
 
-  const currentType =
+  const currentSegment =
     state && segments.length
-      ? (segmentAt(segments, state.offsetInRecording)?.type ?? null)
+      ? segmentAt(segments, state.offsetInRecording)
       : null;
 
   return (
@@ -196,7 +196,7 @@ export default function Home() {
                 <NowPlaying
                   detail={detail}
                   state={state}
-                  currentType={currentType}
+                  currentSegment={currentSegment}
                   segments={segments}
                   onSeek={scrub ? handleScrubSeek : undefined}
                 />
