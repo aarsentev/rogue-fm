@@ -18,9 +18,10 @@ function streamFile(
 
   return new ReadableStream<Uint8Array>({
     start(controller) {
-      node.on("data", (chunk: Buffer) => {
+      node.on("data", (chunk: string | Buffer) => {
+        const buf = typeof chunk === "string" ? Buffer.from(chunk) : chunk;
         try {
-          controller.enqueue(new Uint8Array(chunk));
+          controller.enqueue(new Uint8Array(buf));
         } catch {
           node.destroy();
           return;

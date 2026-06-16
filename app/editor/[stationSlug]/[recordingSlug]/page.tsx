@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { use as usePromise } from "react";
 import Link from "next/link";
 import { fmtTime } from "@/lib/types";
+import { tuneOut } from "@/lib/broadcastEngine";
 import {
   SEGMENT_COLORS,
   SEGMENT_TYPES,
@@ -84,6 +85,12 @@ export default function EditorPage({
   const regionsApiRef = useRef<unknown>(null);
   const segmentsRef = useRef<Seg[]>([]);
   segmentsRef.current = rec?.segments ?? [];
+
+  // The editor needs the room to itself — kill the live broadcast so its
+  // audio doesn't overlay waveform playback.
+  useEffect(() => {
+    tuneOut();
+  }, []);
 
   // Resolve the slug pair to the recording id, then load the detail.
   useEffect(() => {
