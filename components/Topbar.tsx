@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SettingsButton } from "./SettingsButton";
 
 export function Topbar() {
   return (
@@ -13,6 +14,7 @@ export function Topbar() {
       >
         Library
       </Link>
+      <SettingsButton />
       <span className="text-[11px] text-[#333]">
         personal build · local files
       </span>
