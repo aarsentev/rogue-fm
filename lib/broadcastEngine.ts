@@ -4,6 +4,8 @@ import { useSyncExternalStore } from "react";
 import { getPlayer } from "./player";
 import { getStationState } from "./broadcastClock";
 import { skipTarget, type Seg } from "./skipLogic";
+import { getSettings } from "./settings";
+import { playRadioClick } from "./static";
 import type { StationDetail } from "./types";
 
 /**
@@ -95,6 +97,8 @@ export function tuneIn() {
 }
 
 export function tuneOut() {
+  // Classic mode: a mechanical click as the audio cuts out.
+  if (getSettings().classicMode) playRadioClick();
   stopLoops();
   getPlayer().unload();
   set({ started: false });

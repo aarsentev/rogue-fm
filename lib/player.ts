@@ -2,6 +2,7 @@
 
 import { Howl } from "howler";
 import { playRadioStatic } from "./static";
+import { getSettings } from "./settings";
 
 const FADE_MS = 500;
 const STATIC_MS = 700;
@@ -54,7 +55,10 @@ export class Player {
   }
 
   private transitionTo(recordingId: string, offsetSec: number) {
-    if (!this.muted) playRadioStatic(STATIC_MS, 0.35);
+    // Tuning static is a classic-mode flourish; skip it in modern mode.
+    if (!this.muted && getSettings().classicMode) {
+      playRadioStatic(STATIC_MS, 0.35);
+    }
 
     const oldHowl = this.howl;
     this.ended = false;

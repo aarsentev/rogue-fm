@@ -53,3 +53,63 @@ export function playRadioStatic(durationMs = 350, peakGain = 0.35): void {
     console.warn("static playback failed", e);
   }
 }
+
+export function playRadioClick(peakGain = 0.9): void {
+  const ctx = getCtx();
+  if (!ctx) return;
+  try {
+    const t0 = ctx.currentTime + 0.001;
+
+    const master = ctx.createGain();
+    master.gain.value = peakGain;
+    master.connect(ctx.destination);
+
+    // A short noise burst, high-passed into a percussive "tick".
+    const tick = (start: number, durMs: number, hpHz: number, gain: number) => {
+      const samples = Math.max(1, Math.floor((ctx.sampleRate * durMs) / 1000));
+      const buf = ctx.createBuffer(1, samples, ctx.sampleRate);
+      const d = buf.getChannelData(0);
+      for (let i = 0; i < samples; i++) {
+        const env = Math.pow(1 - i / samples, 2);
+        d[i] = (Math.random() * 2 - 1) * env;
+      }
+      const src = ctx.createBufferSource();
+      src.buffer = buf;
+      const hp = ctx.createBiquadFilter();
+      hp.type = "highpass";
+      hp.frequency.value = hpHz;
+      const g = ctx.createGain();
+      g.gain.value = gain;
+      src.connect(hp).connect(g).connect(master);
+      src.start(start);
+      src.stop(start + durMs / 1000);
+    };
+
+    // Low sine with a downward pitch sweep and fast decay — the "thunk" body.
+    const thunk = (
+      start: number,
+      freq: number,
+      durMs: number,
+      gain: number,
+    ) => {
+      const dur = durMs / 1000;
+      const osc = ctx.createOscillator();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(freq, start);
+      osc.frequency.exponentialRampToValueAtTime(freq * 0.55, start + dur);
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0, start);
+      g.gain.linearRampToValueAtTime(gain, start + 0.004);
+      g.gain.exponentialRampToValueAtTime(0.0001, start + dur);
+      osc.connect(g).connect(master);
+      osc.start(start);
+      osc.stop(start + dur + 0.02);
+    };
+
+    tick(t0, 9, 1800, 0.85); // contact tick
+    thunk(t0, 165, 120, 0.9); // body thunk
+    tick(t0 + 0.045, 6, 1400, 0.4); // latch/return tick
+  } catch (e) {
+    console.warn("click playback failed", e);
+  }
+}
