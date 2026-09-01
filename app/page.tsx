@@ -29,10 +29,10 @@ export default function Home() {
     useBroadcast();
   const [, setTick] = useState(0);
 
-  // Dev-only scrub: shift a local epoch override so the broadcast clock
+  // Dev-only seek: shift a local epoch override so the broadcast clock
   // "time-travels" to a clicked position. Never persisted; prod stays live.
   const DEV = process.env.NODE_ENV !== "production";
-  const [scrub, setScrub] = useState(false);
+  const [seek, setSeek] = useState(false);
 
   useEffect(() => {
     fetch("/api/stations")
@@ -72,7 +72,7 @@ export default function Home() {
       )
     : null;
 
-  const handleScrubSeek = (offsetSec: number) => {
+  const handleSeek = (offsetSec: number) => {
     if (!detail || !state) return;
     let preceding = 0;
     for (let i = 0; i < state.recordingIndex; i++) {
@@ -152,19 +152,19 @@ export default function Home() {
                   state={state}
                   currentSegment={currentSegment}
                   segments={segments}
-                  onSeek={scrub ? handleScrubSeek : undefined}
+                  onSeek={seek ? handleSeek : undefined}
                 />
 
                 {DEV && (
                   <button
-                    onClick={() => setScrub((v) => !v)}
+                    onClick={() => setSeek((v) => !v)}
                     className="mt-3 text-[10px] tracking-[0.08em] px-2.5 py-1 rounded border transition-colors"
                     style={{
-                      borderColor: scrub ? "#7d5fb0" : "#222",
-                      color: scrub ? "#7d5fb0" : "#555",
+                      borderColor: seek ? "#7d5fb0" : "#222",
+                      color: seek ? "#7d5fb0" : "#555",
                     }}
                   >
-                    🛠 SCRUB {scrub ? "ON — click ribbon to jump" : "off"}
+                    🛠 SEEK {seek ? "ON — click ribbon or Up next to jump" : "off"}
                   </button>
                 )}
 
@@ -172,6 +172,7 @@ export default function Home() {
                   segments={segments}
                   positionSec={state?.offsetInRecording ?? 0}
                   hasSegmentData={segments.length > 0}
+                  onSeek={seek ? handleSeek : undefined}
                 />
 
                 <button

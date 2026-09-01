@@ -7,9 +7,17 @@ type Props = {
   segments: Seg[];
   positionSec: number;
   hasSegmentData: boolean;
+  // When provided (seek mode on), rows are clickable and jump to the
+  // segment's start offset within the current recording.
+  onSeek?: (sec: number) => void;
 };
 
-export function UpNext({ segments, positionSec, hasSegmentData }: Props) {
+export function UpNext({
+  segments,
+  positionSec,
+  hasSegmentData,
+  onSeek,
+}: Props) {
   if (!hasSegmentData) {
     return (
       <div className="mt-10 mb-6">
@@ -49,10 +57,28 @@ export function UpNext({ segments, positionSec, hasSegmentData }: Props) {
           hasTrack && s.trackTitle
             ? `${s.trackTitle}${s.trackArtist ? " — " + s.trackArtist : ""}`
             : s.label?.trim() || segmentLabel(s.type);
+        const seekable = !!onSeek;
         return (
           <div
             key={`${s.startSec}-${i}`}
-            className="flex items-center gap-3.5 px-3.5 py-2 rounded-lg mb-0.5"
+            onClick={seekable ? () => onSeek(s.startSec) : undefined}
+            role={seekable ? "button" : undefined}
+            tabIndex={seekable ? 0 : undefined}
+            onKeyDown={
+              seekable
+                ? (e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      onSeek(s.startSec);
+                    }
+                  }
+                : undefined
+            }
+            className={`flex items-center gap-3.5 px-3.5 py-2 rounded-lg mb-0.5 ${
+              seekable
+                ? "cursor-pointer hover:bg-[#141414] transition-colors"
+                : ""
+            }`}
             style={{ background: i === 0 ? "#0f0f0f" : "transparent" }}
           >
             <span className="text-[11px] text-[#2e2e2e] w-3.5 text-center">
