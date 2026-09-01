@@ -12,6 +12,7 @@ export class Player {
   private currentRecordingId: string | null = null;
   private muted = false;
   private onEndedCb: (() => void) | null = null;
+  private ended = false;
 
   setOnEnded(cb: (() => void) | null) {
     this.onEndedCb = cb;
@@ -20,15 +21,25 @@ export class Player {
   loadAndSync(recordingId: string, offsetSec: number) {
     if (recordingId !== this.currentRecordingId) {
       this.transitionTo(recordingId, offsetSec);
+    } else if (this.ended) {
+      this.replay(offsetSec);
     } else {
       this.resync(offsetSec);
     }
+  }
+
+  private replay(offsetSec: number) {
+    if (!this.howl) return;
+    this.ended = false;
+    this.howl.seek(offsetSec);
+    this.howl.play();
   }
 
   private transitionTo(recordingId: string, offsetSec: number) {
     if (!this.muted) playRadioStatic(STATIC_MS, 0.35);
 
     const oldHowl = this.howl;
+    this.ended = false;
 
     const h = new Howl({
       src: [`/api/audio/${recordingId}`],
@@ -39,7 +50,10 @@ export class Player {
       volume: 0,
       onloaderror: (_id, err) => console.error("howl load error", err),
       onplayerror: (_id, err) => console.error("howl play error", err),
-      onend: () => this.onEndedCb?.(),
+      onend: () => {
+        this.ended = true;
+        this.onEndedCb?.();
+      },
     });
 
     h.once("play", () => {
@@ -103,6 +117,7 @@ export class Player {
     this.howl?.unload();
     this.howl = null;
     this.currentRecordingId = null;
+    this.ended = false;
   }
 }
 
