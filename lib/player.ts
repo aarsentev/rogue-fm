@@ -18,14 +18,32 @@ export class Player {
     this.onEndedCb = cb;
   }
 
-  loadAndSync(recordingId: string, offsetSec: number) {
+  // `duration` is the recording's LOGICAL (trimmed) length from the DB, which
+  // can be shorter than the physical audio file — the tail past it is trimmed
+  // garbage. The broadcast clock wraps at the logical length, so we must stop
+  // the audio there rather than at the file's physical end.
+  loadAndSync(recordingId: string, offsetSec: number, duration: number) {
     if (recordingId !== this.currentRecordingId) {
       this.transitionTo(recordingId, offsetSec);
     } else if (this.ended) {
       this.replay(offsetSec);
+    } else if (this.isPastLogicalEnd(offsetSec, duration)) {
+      // Same recording looping onto itself: the clock has wrapped back near
+      // the start while the file is still playing its trimmed tail. Jump to
+      // the new offset instead of letting that garbage play out.
+      this.replay(offsetSec);
     } else {
       this.resync(offsetSec);
     }
+  }
+
+  // True when playback has reached the logical end but the clock has already
+  // wrapped to an earlier offset (the tell-tale of a same-recording loop).
+  private isPastLogicalEnd(offsetSec: number, duration: number): boolean {
+    if (duration <= 0) return false;
+    const cur = this.getPositionSec();
+    if (cur == null) return false;
+    return cur >= duration && cur - offsetSec > 1;
   }
 
   private replay(offsetSec: number) {

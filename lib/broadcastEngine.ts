@@ -51,7 +51,13 @@ function evalAndSync() {
     { recordings: detail.recordings, totalDuration: detail.totalDuration },
     epochOverride ?? detail.epoch,
   );
-  if (s) getPlayer().loadAndSync(s.recording.id, s.offsetInRecording);
+  if (s) {
+    getPlayer().loadAndSync(
+      s.recording.id,
+      s.offsetInRecording,
+      s.recording.duration,
+    );
+  }
 }
 
 function skipTick() {
@@ -68,7 +74,10 @@ function startLoops() {
   stopLoops();
   evalAndSync();
   getPlayer().setOnEnded(evalAndSync);
-  syncTimer = setInterval(evalAndSync, 3000);
+  // Runs often so the loop point (clock wrap past a recording's logical end)
+  // is caught within a fraction of a second, not up to a sync-interval later —
+  // otherwise a trimmed audio tail would be audible before we jump.
+  syncTimer = setInterval(evalAndSync, 500);
   skipTimer = setInterval(skipTick, 500);
 }
 
