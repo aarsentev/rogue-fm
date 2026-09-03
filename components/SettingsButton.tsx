@@ -9,6 +9,7 @@ const ACCENT = "#c0392b";
 export function SettingsButton() {
   const [open, setOpen] = useState(false);
   const { classicMode } = useSettings();
+  const { shazamMode } = useSettings();
 
   useEffect(() => {
     if (!open) return;
@@ -68,6 +69,26 @@ export function SettingsButton() {
                 </span>
                 <span className="block text-[11px] text-[#555] mt-0.5">
                   Tuning static when you tune in, and a click when you tune out.
+                </span>
+              </span>
+            </button>
+
+            <button
+              onClick={() => setSettings({ shazamMode: !shazamMode })}
+              className="w-full flex items-center gap-3.5 px-4 py-3.5 rounded-xl border transition-colors text-left"
+              style={{
+                background: shazamMode ? ACCENT + "14" : "#0d0d0d",
+                borderColor: shazamMode ? ACCENT + "40" : "#181818",
+              }}
+            >
+              <Toggle on={shazamMode} color={ACCENT} />
+              <span className="flex-1">
+                <span className="block text-[13px] text-[#ccc]">
+                  Classic mode
+                </span>
+                <span className="block text-[11px] text-[#555] mt-0.5">
+                  Enable automatic scanning of your track to provide additional
+                  information. An API key is required.
                 </span>
               </span>
             </button>
