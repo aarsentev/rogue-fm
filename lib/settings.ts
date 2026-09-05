@@ -12,10 +12,13 @@ export type Settings = {
   // mechanical click when tuning out. On by default to preserve the
   // long-standing static behaviour.
   classicMode: boolean;
+  // Acoustic-fingerprint track identification. Off by default — it requires
+  // an AcoustID API key and is not wired to a backend yet.
+  shazamMode: boolean;
 };
 
 const STORAGE_KEY = "roguefm.settings";
-const DEFAULTS: Settings = { classicMode: true };
+const DEFAULTS: Settings = { classicMode: true, shazamMode: false };
 
 function load(): Settings {
   if (typeof window === "undefined") return DEFAULTS;

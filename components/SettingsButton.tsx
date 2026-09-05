@@ -8,8 +8,7 @@ const ACCENT = "#c0392b";
 
 export function SettingsButton() {
   const [open, setOpen] = useState(false);
-  const { classicMode } = useSettings();
-  const { shazamMode } = useSettings();
+  const { classicMode, shazamMode } = useSettings();
 
   useEffect(() => {
     if (!open) return;
@@ -84,7 +83,7 @@ export function SettingsButton() {
               <Toggle on={shazamMode} color={ACCENT} />
               <span className="flex-1">
                 <span className="block text-[13px] text-[#ccc]">
-                  Classic mode
+                  Shazam mode
                 </span>
                 <span className="block text-[11px] text-[#555] mt-0.5">
                   Enable automatic scanning of your track to provide additional
