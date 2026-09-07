@@ -37,9 +37,11 @@ FPCALC = os.environ.get("FPCALC", "fpcalc")
 FFMPEG = os.environ.get("FFMPEG", "ffmpeg")
 API_KEY = os.environ.get("ACOUSTID_API_KEY", "").strip()
 
-# Cap the analysed audio: ~2 min is ample for a confident AcoustID match and
-# keeps both fingerprinting and the API call quick.
-MAX_FP_SECONDS = 120.0
+# Fingerprint (close to) the WHOLE segment and send its true duration.
+# AcoustID's index is duration-aware — a short fragment claiming a short
+# duration will NOT match a full-length song, so we must not truncate to the
+# fpcalc default of 120s. Cap only to keep pathological runs bounded.
+MAX_FP_SECONDS = 600.0
 
 
 def log(*a):
@@ -68,8 +70,11 @@ def slice_audio(file: str, start: float, end: float, dst: str) -> None:
 
 
 def fingerprint(path: str) -> tuple[str, float]:
+    # -length must exceed the slice or fpcalc truncates to its 120s default,
+    # which breaks matching against full-length recordings.
     out = subprocess.run(
-        [FPCALC, "-json", path], check=True, capture_output=True, text=True
+        [FPCALC, "-json", "-length", str(int(MAX_FP_SECONDS) + 10), path],
+        check=True, capture_output=True, text=True,
     )
     d = json.loads(out.stdout)
     return d["fingerprint"], float(d["duration"])
@@ -136,13 +141,27 @@ def main() -> int:
             return 0
 
         if resp.get("status") != "ok":
-            emit({"id": args.id, "error": f"status {resp.get('status')}"})
+            err = resp.get("error") or {}
+            msg = err.get("message") if isinstance(err, dict) else err
+            log(f"[identify] acoustid status={resp.get('status')} "
+                f"code={err.get('code') if isinstance(err, dict) else '?'} "
+                f"message={msg}")
+            emit({"id": args.id, "error": f"acoustid: {msg or 'unknown'}"})
             return 0
 
-        m = best_match(resp.get("results", []) or [])
+        results = resp.get("results", []) or []
+        m = best_match(results)
         if not m:
-            log("[identify] no match")
-            emit({"id": args.id, "matched": False})
+            if results:
+                # A fingerprint matched, but that AcoustID entry has no linked
+                # MusicBrainz recording — acoustically known, metadata unknown.
+                top = round(float(results[0].get("score", 0.0)), 4)
+                log(f"[identify] acoustic match (score={top}) but no metadata")
+                emit({"id": args.id, "matched": False,
+                      "acousticScore": top})
+            else:
+                log("[identify] no match")
+                emit({"id": args.id, "matched": False})
             return 0
 
         log(f"[identify] MATCH score={m['score']} "
