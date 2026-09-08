@@ -4,6 +4,7 @@ import { fmtTime, type StationDetail } from "@/lib/types";
 import type { ClockState } from "@/lib/broadcastClock";
 import { segmentLabel, type Seg } from "@/lib/skipLogic";
 import { SegmentRibbon } from "./SegmentRibbon";
+import { TrackIdentify } from "./TrackIdentify";
 
 type Props = {
   detail: StationDetail;
@@ -32,10 +33,6 @@ export function NowPlaying({
   const trackTitle = hasTrack ? currentSegment?.trackTitle?.trim() : null;
   const trackArtist = hasTrack ? currentSegment?.trackArtist?.trim() : null;
 
-  const subtitle = trackTitle
-    ? trackTitle + (trackArtist ? ` — ${trackArtist}` : "")
-    : segmentLabel(currentSegment?.type ?? null);
-
   return (
     <>
       <div className="mb-1.5">
@@ -60,7 +57,22 @@ export function NowPlaying({
         <p className="text-[24px] font-medium mb-1 text-white truncate">
           {recordingName}
         </p>
-        <p className="text-[14px] text-[#666] mb-7 truncate">{subtitle}</p>
+        {trackTitle ? (
+          <p className="text-[14px] text-[#666] mb-7 truncate">
+            {trackTitle}
+            {trackArtist ? ` — ${trackArtist}` : ""}
+          </p>
+        ) : hasTrack ? (
+          // Music/talkover with no title yet → the identify affordance.
+          <TrackIdentify
+            key={currentSegment?.startSec ?? "none"}
+            accent={detail.station.color}
+          />
+        ) : (
+          <p className="text-[14px] text-[#666] mb-7 truncate">
+            {segmentLabel(currentSegment?.type ?? null)}
+          </p>
+        )}
 
         <div className="h-[3px] bg-[#1e1e1e] rounded mb-2">
           <div
@@ -76,7 +88,7 @@ export function NowPlaying({
             {fmtTime(state?.offsetInRecording ?? 0)}
           </span>
           <span className="text-[10px] text-[#2a2a2a] tracking-[0.08em]">
-            LIVE · NO SCRUBBING
+            LIVE
           </span>
           <span className="text-[11px] text-[#444]">
             {fmtTime(state?.recording.duration ?? 0)}
