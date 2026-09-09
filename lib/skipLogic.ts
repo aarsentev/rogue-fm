@@ -1,6 +1,7 @@
 export type SkipFlags = { skipDJ: boolean; skipAds: boolean };
 
 export type Seg = {
+  id?: string;
   startSec: number;
   endSec: number;
   type: string;

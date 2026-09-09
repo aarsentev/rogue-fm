@@ -65,7 +65,8 @@ export function NowPlaying({
         ) : hasTrack ? (
           // Music/talkover with no title yet → the identify affordance.
           <TrackIdentify
-            key={currentSegment?.startSec ?? "none"}
+            key={currentSegment?.id ?? currentSegment?.startSec ?? "none"}
+            segmentId={currentSegment?.id}
             accent={detail.station.color}
           />
         ) : (

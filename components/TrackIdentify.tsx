@@ -6,21 +6,33 @@ import { useSettings } from "@/lib/settings";
 type Outcome =
   | { kind: "matched"; artist: string; title: string }
   | { kind: "acoustic"; score: number }
-  | { kind: "nomatch" };
+  | { kind: "nomatch" }
+  | { kind: "error"; message: string };
 
-// TEMP stub — cycles through the three outcomes so every visual state is
-// reviewable without hunting for the right kind of segment. Replace with a
-// POST to /api/segments/[id]/identify once that route exists; the surrounding
-// state machine (idle → listening → done) stays exactly as-is.
-let stubTurn = 0;
-function stubIdentify(): Promise<Outcome> {
-  const outcomes: Outcome[] = [
-    { kind: "matched", artist: "Sample Artist", title: "Sample Song" },
-    { kind: "acoustic", score: 0.9 },
-    { kind: "nomatch" },
-  ];
-  const pick = outcomes[stubTurn++ % outcomes.length];
-  return new Promise((r) => setTimeout(() => r(pick), 1600));
+async function identify(segmentId: string): Promise<Outcome> {
+  const res = await fetch(`/api/segments/${segmentId}/identify`, {
+    method: "POST",
+  });
+  if (!res.ok) {
+    let message = "Identification unavailable";
+    try {
+      const j = await res.json();
+      if (j?.error) message = j.error;
+    } catch {
+      // keep the default message
+    }
+    return { kind: "error", message };
+  }
+  const j = await res.json();
+  if (j.matched && j.title) {
+    return {
+      kind: "matched",
+      artist: j.artist ?? "Unknown artist",
+      title: j.title,
+    };
+  }
+  if (j.acousticScore) return { kind: "acoustic", score: j.acousticScore };
+  return { kind: "nomatch" };
 }
 
 type Phase =
@@ -31,14 +43,35 @@ type Phase =
 // Occupies the Now Playing subtitle slot for an UNIDENTIFIED music/talkover
 // segment. With Shazam mode off it's just an honest "Unidentified track" line;
 // with it on, it offers the identify affordance and its listening/reveal states.
-export function TrackIdentify({ accent }: { accent: string }) {
+// Result is NOT persisted — it's transient until the segment changes.
+export function TrackIdentify({
+  segmentId,
+  accent,
+}: {
+  segmentId?: string;
+  accent: string;
+}) {
   const { shazamMode } = useSettings();
   const [phase, setPhase] = useState<Phase>({ name: "idle" });
 
   const run = async () => {
+    if (!segmentId) {
+      setPhase({
+        name: "done",
+        outcome: { kind: "error", message: "No segment to identify" },
+      });
+      return;
+    }
     setPhase({ name: "listening" });
-    const outcome = await stubIdentify();
-    setPhase({ name: "done", outcome });
+    try {
+      const outcome = await identify(segmentId);
+      setPhase({ name: "done", outcome });
+    } catch {
+      setPhase({
+        name: "done",
+        outcome: { kind: "error", message: "Identification failed" },
+      });
+    }
   };
 
   if (!shazamMode) {
@@ -86,6 +119,11 @@ export function TrackIdentify({ accent }: { accent: string }) {
             Couldn&apos;t identify this one
           </span>
         )}
+        {o.kind === "error" && (
+          <span className="text-[14px] text-[#7d5a5a] truncate">
+            {o.message}
+          </span>
+        )}
         <button
           onClick={run}
           aria-label="Identify again"
@@ -94,9 +132,6 @@ export function TrackIdentify({ accent }: { accent: string }) {
         >
           ↻
         </button>
-        <span className="text-[10px] text-[#333] tracking-[0.08em] uppercase shrink-0">
-          preview
-        </span>
       </div>
     );
   }
