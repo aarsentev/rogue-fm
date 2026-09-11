@@ -1,6 +1,6 @@
 "use client";
 
-import { Toggle } from "./Toggle";
+import { Toggle } from "@/components/ui/Toggle";
 
 type Props = {
   color: string;

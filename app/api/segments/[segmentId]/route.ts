@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import { SEGMENT_TYPES } from "@/lib/skipLogic";
+import { SEGMENT_TYPES } from "@/lib/broadcast/skipLogic";
 import { z } from "zod";
 
 export const dynamic = "force-dynamic";

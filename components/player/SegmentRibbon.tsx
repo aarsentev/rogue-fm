@@ -4,7 +4,7 @@ import {
   SEGMENT_COLORS as SEG_COLOR,
   segmentLabel,
   type Seg,
-} from "@/lib/skipLogic";
+} from "@/lib/broadcast/skipLogic";
 
 type Props = {
   segments: Seg[];

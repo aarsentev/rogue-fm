@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getStationState } from "@/lib/broadcastClock";
-import { getPlayer } from "@/lib/player";
+import { getStationState } from "@/lib/broadcast/clock";
+import { getPlayer } from "@/lib/broadcast/player";
 import {
   useBroadcast,
   tuneIn,
@@ -11,16 +11,16 @@ import {
   setSegments,
   setSkipFlags,
   overrideEpoch,
-} from "@/lib/broadcastEngine";
-import { useMediaSession } from "@/lib/mediaSession";
-import { segmentAt, type Seg } from "@/lib/skipLogic";
+} from "@/lib/broadcast/engine";
+import { useMediaSession } from "@/lib/broadcast/mediaSession";
+import { segmentAt, type Seg } from "@/lib/broadcast/skipLogic";
 import type { StationDetail, StationSummary } from "@/lib/types";
-import { Topbar } from "@/components/Topbar";
-import { Sidebar } from "@/components/Sidebar";
-import { CoverFlow } from "@/components/CoverFlow";
-import { NowPlaying } from "@/components/NowPlaying";
-import { UpNext } from "@/components/UpNext";
-import { SkipControls } from "@/components/SkipControls";
+import { Topbar } from "@/components/layout/Topbar";
+import { Sidebar } from "@/components/layout/Sidebar";
+import { CoverFlow } from "@/components/station/CoverFlow";
+import { NowPlaying } from "@/components/player/NowPlaying";
+import { UpNext } from "@/components/player/UpNext";
+import { SkipControls } from "@/components/player/SkipControls";
 
 export default function Home() {
   const [stations, setStations] = useState<StationSummary[] | null>(null);

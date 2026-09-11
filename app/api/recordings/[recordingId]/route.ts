@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import { isProcessing } from "@/lib/processing";
+import { isProcessing } from "@/lib/ml/processing";
 import { z } from "zod";
 
 export const dynamic = "force-dynamic";

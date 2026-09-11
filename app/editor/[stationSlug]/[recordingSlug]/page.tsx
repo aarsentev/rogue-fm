@@ -4,13 +4,13 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { use as usePromise } from "react";
 import Link from "next/link";
 import { fmtTime } from "@/lib/types";
-import { tuneOut } from "@/lib/broadcastEngine";
+import { tuneOut } from "@/lib/broadcast/engine";
 import {
   SEGMENT_COLORS,
   SEGMENT_TYPES,
   segmentColor,
   segmentLabel,
-} from "@/lib/skipLogic";
+} from "@/lib/broadcast/skipLogic";
 
 type Seg = {
   id: string;

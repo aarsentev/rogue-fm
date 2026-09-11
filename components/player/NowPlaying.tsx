@@ -1,10 +1,10 @@
 "use client";
 
 import { fmtTime, type StationDetail } from "@/lib/types";
-import type { ClockState } from "@/lib/broadcastClock";
-import { segmentLabel, type Seg } from "@/lib/skipLogic";
-import { SegmentRibbon } from "./SegmentRibbon";
-import { TrackIdentify } from "./TrackIdentify";
+import type { ClockState } from "@/lib/broadcast/clock";
+import { segmentLabel, type Seg } from "@/lib/broadcast/skipLogic";
+import { SegmentRibbon } from "@/components/player/SegmentRibbon";
+import { TrackIdentify } from "@/components/player/TrackIdentify";
 
 type Props = {
   detail: StationDetail;

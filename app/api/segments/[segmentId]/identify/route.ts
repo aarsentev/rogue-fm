@@ -1,6 +1,6 @@
 import path from "node:path";
 import { prisma } from "@/lib/db";
-import { identifySegment } from "@/lib/identify";
+import { identifySegment } from "@/lib/ml/identify";
 
 export const dynamic = "force-dynamic";
 

@@ -2,49 +2,8 @@
 
 import { useState } from "react";
 import { useSettings } from "@/lib/settings";
-
-type Match = {
-  title: string;
-  artist: string | null;
-  album: string | null;
-  score: number | null;
-};
-
-type Outcome =
-  | { kind: "matched"; match: Match }
-  | { kind: "acoustic"; score: number }
-  | { kind: "nomatch" }
-  | { kind: "error"; message: string };
-
-async function identify(segmentId: string): Promise<Outcome> {
-  const res = await fetch(`/api/segments/${segmentId}/identify`, {
-    method: "POST",
-  });
-  if (!res.ok) {
-    let message = "Identification unavailable";
-    try {
-      const j = await res.json();
-      if (j?.error) message = j.error;
-    } catch {
-      // keep the default message
-    }
-    return { kind: "error", message };
-  }
-  const j = await res.json();
-  if (j.matched && j.title) {
-    return {
-      kind: "matched",
-      match: {
-        title: j.title,
-        artist: j.artist ?? null,
-        album: j.album ?? null,
-        score: j.score ?? null,
-      },
-    };
-  }
-  if (j.acousticScore) return { kind: "acoustic", score: j.acousticScore };
-  return { kind: "nomatch" };
-}
+import { identify, saveTrack, type Match, type Outcome } from "./identifyClient";
+import { ConfirmModal } from "./ConfirmModal";
 
 type Phase =
   | { name: "idle" }
@@ -90,16 +49,7 @@ export function TrackIdentify({
     if (!segmentId) return;
     setPhase({ name: "saving", match: m });
     try {
-      const res = await fetch(`/api/segments/${segmentId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          trackTitle: m.title,
-          trackArtist: m.artist,
-          trackAlbum: m.album,
-        }),
-      });
-      if (!res.ok) throw new Error("save failed");
+      await saveTrack(segmentId, m);
       setPhase({
         name: "saved",
         label: `${m.artist ? m.artist + " — " : ""}${m.title}`,
@@ -111,8 +61,6 @@ export function TrackIdentify({
       });
     }
   };
-
-  // --- terminal inline states -------------------------------------------
 
   if (!shazamMode) {
     return (
@@ -152,10 +100,7 @@ export function TrackIdentify({
   }
 
   // Non-match results render inline with a retry.
-  if (
-    phase.name === "result" &&
-    phase.outcome.kind !== "matched"
-  ) {
+  if (phase.name === "result" && phase.outcome.kind !== "matched") {
     const o = phase.outcome;
     return (
       <div className="flex items-center gap-2.5 mb-7 min-h-[21px]">
@@ -195,7 +140,6 @@ export function TrackIdentify({
         : null;
 
   if (match) {
-    const saving = phase.name === "saving";
     return (
       <>
         <p className="text-[14px] text-[#888] italic mb-7 truncate">
@@ -204,7 +148,7 @@ export function TrackIdentify({
         <ConfirmModal
           match={match}
           accent={accent}
-          saving={saving}
+          saving={phase.name === "saving"}
           onSave={() => save(match)}
           onRetry={run}
           onAbort={() => setPhase({ name: "idle" })}
@@ -224,91 +168,6 @@ export function TrackIdentify({
       >
         <span aria-hidden>◎</span> Identify
       </button>
-    </div>
-  );
-}
-
-function ConfirmModal({
-  match,
-  accent,
-  saving,
-  onSave,
-  onRetry,
-  onAbort,
-}: {
-  match: Match;
-  accent: string;
-  saving: boolean;
-  onSave: () => void;
-  onRetry: () => void;
-  onAbort: () => void;
-}) {
-  const rows: [string, string][] = [
-    ["Title", match.title || "—"],
-    ["Artist", match.artist || "—"],
-    ["Album", match.album || "—"],
-  ];
-  const pct = match.score != null ? Math.round(match.score * 100) : null;
-
-  return (
-    <div
-      onClick={saving ? undefined : onAbort}
-      className="fixed inset-0 z-50 bg-black/60 flex items-start justify-center pt-28 px-4"
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-[420px] bg-[#0f0f0f] border border-[#1e1e1e] rounded-2xl p-6"
-      >
-        <div className="flex items-baseline justify-between mb-4">
-          <h2 className="text-[13px] font-semibold text-[#ccc] tracking-[0.08em] uppercase">
-            Is this the right track?
-          </h2>
-          {pct != null && (
-            <span className="text-[11px] text-[#555]">{pct}% match</span>
-          )}
-        </div>
-
-        <dl className="mb-6">
-          {rows.map(([label, value]) => (
-            <div
-              key={label}
-              className="flex gap-4 py-2 border-b border-[#161616] last:border-0"
-            >
-              <dt className="text-[11px] text-[#555] uppercase tracking-[0.08em] w-16 shrink-0 pt-0.5">
-                {label}
-              </dt>
-              <dd className="text-[14px] text-[#ddd] flex-1 break-words">
-                {value}
-              </dd>
-            </div>
-          ))}
-        </dl>
-
-        <div className="flex flex-col gap-2">
-          <button
-            onClick={onSave}
-            disabled={saving}
-            className="w-full py-2.5 rounded-xl text-[13px] font-medium transition-colors disabled:opacity-60"
-            style={{ background: accent, color: "#0a0a0a" }}
-          >
-            {saving ? "Saving…" : "Yes, save"}
-          </button>
-          <button
-            onClick={onRetry}
-            disabled={saving}
-            className="w-full py-2.5 rounded-xl text-[13px] border border-[#242424] text-[#aaa] hover:bg-[#141414] transition-colors disabled:opacity-60"
-          >
-            Not quite, try again
-          </button>
-          <button
-            onClick={onAbort}
-            disabled={saving}
-            className="w-full py-2 rounded-xl text-[12px] text-[#555] hover:text-[#888] transition-colors disabled:opacity-60"
-          >
-            No, abort
-          </button>
-        </div>
-      </div>
     </div>
   );
 }

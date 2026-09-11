@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import type { ClockState } from "./broadcastClock";
-import type { StationDetail } from "./types";
+import type { ClockState } from "@/lib/broadcast/clock";
+import type { StationDetail } from "@/lib/types";
 
 export type MediaSessionHandlers = {
   onPlay: () => void;

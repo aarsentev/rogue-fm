@@ -1,4 +1,4 @@
-import type { Recording } from "@/lib/broadcastClock";
+import type { Recording } from "@/lib/broadcast/clock";
 
 export type StationSummary = {
   id: string;

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { SettingsButton } from "./SettingsButton";
+import { SettingsButton } from "@/components/settings/SettingsButton";
 
 export function Topbar() {
   return (

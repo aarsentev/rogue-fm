@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import type { StationSummary } from "@/lib/types";
-import { Cover } from "./Cover";
+import { Cover } from "@/components/station/Cover";
 
 type Props = {
   stations: StationSummary[];

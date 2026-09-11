@@ -1,7 +1,7 @@
 "use client";
 
 import { fmtTime } from "@/lib/types";
-import { segmentLabel, type Seg } from "@/lib/skipLogic";
+import { segmentLabel, type Seg } from "@/lib/broadcast/skipLogic";
 
 type Props = {
   segments: Seg[];

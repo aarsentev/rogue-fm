@@ -1,12 +1,12 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import { getPlayer } from "./player";
-import { getStationState } from "./broadcastClock";
-import { skipTarget, type Seg } from "./skipLogic";
-import { getSettings } from "./settings";
-import { playRadioClick } from "./static";
-import type { StationDetail } from "./types";
+import { getPlayer } from "@/lib/broadcast/player";
+import { getStationState } from "@/lib/broadcast/clock";
+import { skipTarget, type Seg } from "@/lib/broadcast/skipLogic";
+import { getSettings } from "@/lib/settings";
+import { playRadioClick } from "@/lib/broadcast/static";
+import type { StationDetail } from "@/lib/types";
 
 /**
  * Module-level broadcast engine. Client-side navigation keeps modules alive,

@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { useBroadcast, tuneOut } from "@/lib/broadcastEngine";
+import { useBroadcast, tuneOut } from "@/lib/broadcast/engine";
 
 /**
  * Floating dock shown on every page except the player itself while the

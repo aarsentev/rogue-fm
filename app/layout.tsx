@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { MiniDock } from "@/components/MiniDock";
+import { MiniDock } from "@/components/player/MiniDock";
 import "./globals.css";
 
 const geistSans = Geist({

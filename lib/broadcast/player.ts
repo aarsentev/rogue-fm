@@ -1,8 +1,8 @@
 "use client";
 
 import { Howl } from "howler";
-import { playRadioStatic } from "./static";
-import { getSettings } from "./settings";
+import { playRadioStatic } from "@/lib/broadcast/static";
+import { getSettings } from "@/lib/settings";
 
 const FADE_MS = 500;
 const STATIC_MS = 700;
