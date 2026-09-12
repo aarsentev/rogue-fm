@@ -80,11 +80,27 @@ export default function EditorPage({
     end: 0,
   });
 
+  // Reset per-recording state when the route points at a different recording.
+  // Adjusting state during render (guarded so it can't loop) is React's
+  // documented "reset on prop change" pattern; doing it in an effect would fire
+  // an extra cascading render.
+  const routeKey = `${stationSlug}/${recordingSlug}`;
+  const [loadedKey, setLoadedKey] = useState(routeKey);
+  if (loadedKey !== routeKey) {
+    setLoadedKey(routeKey);
+    setRec(null);
+    setRecordingId(null);
+  }
+
   const waveformRef = useRef<HTMLDivElement>(null);
   const wsRef = useRef<unknown>(null);
   const regionsApiRef = useRef<unknown>(null);
   const segmentsRef = useRef<Seg[]>([]);
-  segmentsRef.current = rec?.segments ?? [];
+  // Keep the ref pointing at the latest segments for the wavesurfer region
+  // callbacks; updated after commit rather than during render.
+  useEffect(() => {
+    segmentsRef.current = rec?.segments ?? [];
+  }, [rec]);
 
   // The editor needs the room to itself — kill the live broadcast so its
   // audio doesn't overlay waveform playback.
@@ -95,8 +111,6 @@ export default function EditorPage({
   // Resolve the slug pair to the recording id, then load the detail.
   useEffect(() => {
     let cancelled = false;
-    setRec(null);
-    setRecordingId(null);
     (async () => {
       try {
         const lookup = await fetch(

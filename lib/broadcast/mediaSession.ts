@@ -22,8 +22,11 @@ export function useMediaSession(
   handlers: MediaSessionHandlers,
 ): void {
   // Keep latest handlers without rebinding the actions every render.
+  // Updated after commit rather than during render.
   const handlersRef = useRef(handlers);
-  handlersRef.current = handlers;
+  useEffect(() => {
+    handlersRef.current = handlers;
+  });
 
   // Bind action handlers once on mount.
   useEffect(() => {
