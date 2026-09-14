@@ -11,8 +11,8 @@ type Props = {
 
 export function Sidebar({ stations, selectedId, activeRecordingName, onSelect }: Props) {
   return (
-    <aside className="w-[250px] border-r border-[#141414] py-5 shrink-0">
-      <p className="text-[10px] text-[#333] tracking-[0.12em] px-5 mb-2.5 uppercase">
+    <aside className="w-[250px] border-r border-line-soft py-5 shrink-0">
+      <p className="text-[10px] text-ink-7 tracking-[0.12em] px-5 mb-2.5 uppercase">
         Stations
       </p>
       {stations.map((s) => {
@@ -24,7 +24,7 @@ export function Sidebar({ stations, selectedId, activeRecordingName, onSelect }:
             onClick={() => onSelect(s.id)}
             className="w-full px-5 py-2.5 cursor-pointer text-left flex items-center gap-3 border-l-2 transition-colors"
             style={{
-              background: active ? "#111" : "transparent",
+              background: active ? "var(--color-surface)" : "transparent",
               borderLeftColor: active ? s.color : "transparent",
             }}
           >
@@ -38,20 +38,20 @@ export function Sidebar({ stations, selectedId, activeRecordingName, onSelect }:
                 className="rounded-lg shrink-0 object-cover"
                 style={{
                   background: s.color,
-                  border: `1px solid ${active ? s.color + "55" : "#1a1a1a"}`,
+                  border: `1px solid ${active ? s.color + "55" : "var(--color-line-soft)"}`,
                 }}
               />
             ) : (
               <div
                 className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 border"
                 style={{
-                  background: active ? s.color + "20" : "#141414",
-                  borderColor: active ? s.color + "33" : "#1a1a1a",
+                  background: active ? s.color + "20" : "var(--color-raised)",
+                  borderColor: active ? s.color + "33" : "var(--color-line-soft)",
                 }}
               >
                 <span
                   className="text-[9px] font-bold tracking-wider"
-                  style={{ color: active ? s.color : "#444" }}
+                  style={{ color: active ? s.color : "var(--color-ink-6)" }}
                 >
                   {s.freq}
                 </span>
@@ -60,11 +60,11 @@ export function Sidebar({ stations, selectedId, activeRecordingName, onSelect }:
             <div className="overflow-hidden flex-1">
               <p
                 className="text-[13px] font-medium m-0 truncate"
-                style={{ color: active ? "#fff" : "#666" }}
+                style={{ color: active ? "var(--color-ink)" : "var(--color-ink-4)" }}
               >
                 {s.name}
               </p>
-              <p className="text-[11px] text-[#3a3a3a] m-0 truncate">{subtitle}</p>
+              <p className="text-[11px] text-ink-7 m-0 truncate">{subtitle}</p>
             </div>
             {active && (
               <div className="ml-auto flex gap-[2px] items-end shrink-0">

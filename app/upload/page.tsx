@@ -66,27 +66,27 @@ export default function Upload() {
   };
 
   return (
-    <div className="min-h-screen bg-[#080808] text-white">
-      <header className="px-8 py-4 border-b border-[#141414] flex items-center gap-4">
+    <div className="min-h-screen bg-canvas text-ink">
+      <header className="px-8 py-4 border-b border-line-soft flex items-center gap-4">
         <Link
           href="/library"
-          className="text-xs font-semibold tracking-[0.15em] text-[#666] hover:text-white"
+          className="text-xs font-semibold tracking-[0.15em] text-ink-4 hover:text-ink"
         >
           ← LIBRARY
         </Link>
-        <span className="text-xs font-semibold tracking-[0.15em] text-[#888]">
+        <span className="text-xs font-semibold tracking-[0.15em] text-ink-3">
           UPLOAD
         </span>
       </header>
 
       <main className="px-10 py-9 max-w-[560px]">
-        <label className="block text-[11px] text-[#555] uppercase tracking-[0.1em] mb-2">
+        <label className="block text-[11px] text-ink-5 uppercase tracking-[0.1em] mb-2">
           Station
         </label>
         <select
           value={stationId}
           onChange={(e) => setStationId(e.target.value)}
-          className="w-full mb-6 bg-[#0f0f0f] border border-[#222] rounded-lg px-3 py-2.5 text-[13px] text-white"
+          className="w-full mb-6 bg-surface border border-line rounded-lg px-3 py-2.5 text-[13px] text-ink"
         >
           {stations.map((s) => (
             <option key={s.id} value={s.id}>
@@ -95,7 +95,7 @@ export default function Upload() {
           ))}
         </select>
 
-        <label className="block text-[11px] text-[#555] uppercase tracking-[0.1em] mb-2">
+        <label className="block text-[11px] text-ink-5 uppercase tracking-[0.1em] mb-2">
           Recording (.mp3)
         </label>
         <div
@@ -112,8 +112,8 @@ export default function Upload() {
           }}
           className="mb-6 rounded-lg border border-dashed px-6 py-10 text-center cursor-pointer transition-colors"
           style={{
-            borderColor: dragOver ? "#7d5fb0" : "#262626",
-            background: dragOver ? "#13101a" : "#0d0d0d",
+            borderColor: dragOver ? "var(--color-dev)" : "var(--color-line-strong)",
+            background: dragOver ? "var(--color-info-soft)" : "var(--color-inset)",
           }}
         >
           <input
@@ -124,37 +124,37 @@ export default function Upload() {
             onChange={(e) => pick(e.target.files?.[0] ?? null)}
           />
           {file ? (
-            <p className="text-[13px] text-white">
+            <p className="text-[13px] text-ink">
               {file.name}{" "}
-              <span className="text-[#555]">
+              <span className="text-ink-5">
                 ({(file.size / 1_000_000).toFixed(1)} MB)
               </span>
             </p>
           ) : (
-            <p className="text-[13px] text-[#555]">
+            <p className="text-[13px] text-ink-5">
               Drop an .mp3 here or click to choose
             </p>
           )}
         </div>
 
-        <label className="block text-[11px] text-[#555] uppercase tracking-[0.1em] mb-2">
+        <label className="block text-[11px] text-ink-5 uppercase tracking-[0.1em] mb-2">
           Display name
         </label>
         <input
           value={displayName}
           onChange={(e) => setDisplayName(e.target.value)}
           placeholder="e.g. Radio X — Vol. 2"
-          className="w-full mb-6 bg-[#0f0f0f] border border-[#222] rounded-lg px-3 py-2.5 text-[13px] text-white"
+          className="w-full mb-6 bg-surface border border-line rounded-lg px-3 py-2.5 text-[13px] text-ink"
         />
 
         {error && (
-          <p className="text-[12px] text-[#c0392b] mb-4">{error}</p>
+          <p className="text-[12px] text-accent mb-4">{error}</p>
         )}
 
         <button
           disabled={!file || !stationId || busy}
           onClick={submit}
-          className="px-5 py-2.5 rounded-lg border border-[#262626] bg-[#0f0f0f] hover:bg-[#141414] text-[13px] text-[#ccc] disabled:opacity-40 disabled:cursor-not-allowed"
+          className="px-5 py-2.5 rounded-lg border border-line-strong bg-surface hover:bg-raised text-[13px] text-ink-2 disabled:opacity-40 disabled:cursor-not-allowed"
         >
           {busy ? "Uploading…" : "Upload & process"}
         </button>

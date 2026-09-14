@@ -64,7 +64,7 @@ export function TrackIdentify({
 
   if (!shazamMode) {
     return (
-      <p className="text-[14px] text-[#555] italic mb-7 truncate">
+      <p className="text-[14px] text-ink-5 italic mb-7 truncate">
         Unidentified track
       </p>
     );
@@ -74,7 +74,7 @@ export function TrackIdentify({
     return (
       <p className="text-[14px] mb-7 truncate" style={{ color: accent }}>
         {phase.label}
-        <span className="text-[10px] text-[#3a3a3a] tracking-[0.08em] uppercase ml-2.5">
+        <span className="text-[10px] text-ink-7 tracking-[0.08em] uppercase ml-2.5">
           saved
         </span>
       </p>
@@ -94,7 +94,7 @@ export function TrackIdentify({
             style={{ background: accent }}
           />
         </span>
-        <span className="text-[14px] text-[#888]">Listening…</span>
+        <span className="text-[14px] text-ink-3">Listening…</span>
       </div>
     );
   }
@@ -105,17 +105,17 @@ export function TrackIdentify({
     return (
       <div className="flex items-center gap-2.5 mb-7 min-h-[21px]">
         {o.kind === "acoustic" && (
-          <span className="text-[14px] text-[#888] truncate">
+          <span className="text-[14px] text-ink-3 truncate">
             Recognized the sound — not in the database
           </span>
         )}
         {o.kind === "nomatch" && (
-          <span className="text-[14px] text-[#666] truncate">
+          <span className="text-[14px] text-ink-4 truncate">
             Couldn&apos;t identify this one
           </span>
         )}
         {o.kind === "error" && (
-          <span className="text-[14px] text-[#7d5a5a] truncate">
+          <span className="text-[14px] text-danger truncate">
             {o.message}
           </span>
         )}
@@ -123,7 +123,7 @@ export function TrackIdentify({
           onClick={run}
           aria-label="Identify again"
           title="Identify again"
-          className="text-[12px] text-[#444] hover:text-[#999] transition-colors shrink-0"
+          className="text-[12px] text-ink-6 hover:text-ink-3 transition-colors shrink-0"
         >
           ↻
         </button>
@@ -142,7 +142,7 @@ export function TrackIdentify({
   if (match) {
     return (
       <>
-        <p className="text-[14px] text-[#888] italic mb-7 truncate">
+        <p className="text-[14px] text-ink-3 italic mb-7 truncate">
           Match found — confirm below
         </p>
         <ConfirmModal
@@ -160,7 +160,7 @@ export function TrackIdentify({
   // idle
   return (
     <div className="flex items-center gap-3 mb-7">
-      <span className="text-[14px] text-[#555] italic">Unidentified track</span>
+      <span className="text-[14px] text-ink-5 italic">Unidentified track</span>
       <button
         onClick={run}
         className="flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-full border transition-colors"

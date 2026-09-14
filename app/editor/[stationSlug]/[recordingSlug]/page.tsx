@@ -545,34 +545,34 @@ export default function EditorPage({
   deleteRef.current = deleteSegment;
 
   return (
-    <div className="min-h-screen bg-[#080808] text-white">
-      <header className="px-8 py-4 border-b border-[#141414] flex items-center gap-4">
+    <div className="min-h-screen bg-canvas text-ink">
+      <header className="px-8 py-4 border-b border-line-soft flex items-center gap-4">
         <Link
           href="/library"
-          className="text-xs font-semibold tracking-[0.15em] text-[#666] hover:text-white"
+          className="text-xs font-semibold tracking-[0.15em] text-ink-4 hover:text-ink"
         >
           ← LIBRARY
         </Link>
-        <span className="text-xs font-semibold tracking-[0.15em] text-[#888]">
+        <span className="text-xs font-semibold tracking-[0.15em] text-ink-3">
           EDITOR
         </span>
         {rec && (
-          <span className="text-[12px] text-[#666] truncate">
+          <span className="text-[12px] text-ink-4 truncate">
             {rec.displayName ?? rec.filename}
           </span>
         )}
         <span className="ml-auto text-[11px]">
-          {saveState === "saving" && <span className="text-[#888]">saving…</span>}
-          {saveState === "saved" && <span className="text-[#3a7d44]">saved</span>}
+          {saveState === "saving" && <span className="text-ink-3">saving…</span>}
+          {saveState === "saved" && <span className="text-success">saved</span>}
           {saveState === "error" && (
-            <span className="text-[#c0392b]">save failed</span>
+            <span className="text-accent">save failed</span>
           )}
         </span>
       </header>
 
       <main className="px-8 py-7">
         {error && saveState === "error" && (
-          <p className="text-[12px] text-[#c0392b] mb-3">{error}</p>
+          <p className="text-[12px] text-accent mb-3">{error}</p>
         )}
 
         {(() => {
@@ -605,16 +605,16 @@ export default function EditorPage({
 
         <div
           ref={waveformRef}
-          className="rounded-lg border border-[#181818] bg-[#0d0d0d] overflow-hidden"
+          className="rounded-lg border border-line-soft bg-inset overflow-hidden"
         />
 
-        <div className="flex items-center gap-3 mt-3 text-[11px] text-[#555]">
+        <div className="flex items-center gap-3 mt-3 text-[11px] text-ink-5">
           <button
             onClick={() => {
               const ws = wsRef.current as { playPause?: () => void } | null;
               ws?.playPause?.();
             }}
-            className="w-9 h-9 rounded border border-[#222] text-[#ccc] hover:text-white hover:border-[#444] text-[14px] leading-none"
+            className="w-9 h-9 rounded border border-line text-ink-2 hover:text-ink hover:border-line-strong text-[14px] leading-none"
             title={isPlaying ? "Pause (space)" : "Play (space)"}
           >
             {isPlaying ? "■" : "▶"}
@@ -622,26 +622,26 @@ export default function EditorPage({
           <button
             disabled={!selected}
             onClick={playSelection}
-            className="w-9 h-9 rounded border border-[#222] text-[#999] hover:text-white hover:border-[#444] disabled:opacity-30 text-[14px] leading-none"
+            className="w-9 h-9 rounded border border-line text-ink-3 hover:text-ink hover:border-line-strong disabled:opacity-30 text-[14px] leading-none"
             title="Play selected segment"
           >
             ▶|
           </button>
-          <span className="font-mono text-[12px] text-[#aaa] tabular-nums w-20 text-center">
+          <span className="font-mono text-[12px] text-ink-2 tabular-nums w-20 text-center">
             {fmtTimeMs(playhead)}
           </span>
           <button
             onClick={splitAtCursor}
-            className="px-3 py-1.5 rounded border border-[#2f6fb0] text-[#2f6fb0] hover:bg-[#10141a]"
+            className="px-3 py-1.5 rounded border border-info text-info hover:bg-info-soft"
             title="Split the segment under the playhead in two"
           >
             ✂ Split at cursor
           </button>
 
-          <div className="flex items-center gap-2 ml-3 pl-3 border-l border-[#1f1f1f]">
+          <div className="flex items-center gap-2 ml-3 pl-3 border-l border-line-soft">
             <button
               onClick={() => setZoom((z) => Math.max(0.5, z / 1.6))}
-              className="w-7 h-7 rounded border border-[#222] text-[#888] hover:text-white"
+              className="w-7 h-7 rounded border border-line text-ink-3 hover:text-ink"
               title="Zoom out"
             >
               −
@@ -660,14 +660,14 @@ export default function EditorPage({
             />
             <button
               onClick={() => setZoom((z) => Math.min(400, z * 1.6))}
-              className="w-7 h-7 rounded border border-[#222] text-[#888] hover:text-white"
+              className="w-7 h-7 rounded border border-line text-ink-3 hover:text-ink"
               title="Zoom in"
             >
               +
             </button>
             <button
               onClick={fitWhole}
-              className="px-2 h-7 rounded border border-[#222] text-[#888] hover:text-white"
+              className="px-2 h-7 rounded border border-line text-ink-3 hover:text-ink"
               title="Fit whole recording"
             >
               Fit
@@ -675,7 +675,7 @@ export default function EditorPage({
             <button
               onClick={zoomToSelected}
               disabled={!selected}
-              className="px-2 h-7 rounded border border-[#222] text-[#888] hover:text-white disabled:opacity-30"
+              className="px-2 h-7 rounded border border-line text-ink-3 hover:text-ink disabled:opacity-30"
               title="Zoom to selected segment"
             >
               Zoom ↳ sel
@@ -691,7 +691,7 @@ export default function EditorPage({
             return tail > 2 ? (
               <button
                 onClick={trimTail}
-                className="ml-3 px-2 h-7 rounded border border-[#5a2a2a] text-[#c0392b] hover:bg-[#1a0d0d]"
+                className="ml-3 px-2 h-7 rounded border border-danger text-accent hover:bg-danger-soft"
                 title={`Cut the unsegmented ${tail.toFixed(1)}s tail`}
               >
                 ✂ Trim tail ({tail.toFixed(1)}s)
@@ -705,12 +705,12 @@ export default function EditorPage({
           </span>
         </div>
 
-        <p className="mt-1.5 text-[10px] text-[#333] tracking-[0.05em]">
-          keys: <kbd className="text-[#666]">space</kbd> play ·{" "}
-          <kbd className="text-[#666]">S</kbd> split ·{" "}
-          <kbd className="text-[#666]">del</kbd> delete sel ·{" "}
-          <kbd className="text-[#666]">← →</kbd> nudge 0.5s ·{" "}
-          <kbd className="text-[#666]">⇧← ⇧→</kbd> nudge 5s
+        <p className="mt-1.5 text-[10px] text-ink-7 tracking-[0.05em]">
+          keys: <kbd className="text-ink-4">space</kbd> play ·{" "}
+          <kbd className="text-ink-4">S</kbd> split ·{" "}
+          <kbd className="text-ink-4">del</kbd> delete sel ·{" "}
+          <kbd className="text-ink-4">← →</kbd> nudge 0.5s ·{" "}
+          <kbd className="text-ink-4">⇧← ⇧→</kbd> nudge 5s
         </p>
 
         <div className="mt-8 grid grid-cols-[1fr_320px] gap-8">
@@ -731,7 +731,7 @@ export default function EditorPage({
               onDelete={() => deleteSegment(selected.id)}
             />
           ) : (
-            <aside className="text-[12px] text-[#3a3a3a] border border-dashed border-[#1f1f1f] rounded-lg p-5">
+            <aside className="text-[12px] text-ink-7 border border-dashed border-line-soft rounded-lg p-5">
               Click a segment in the waveform or list to edit it.
             </aside>
           )}
@@ -769,7 +769,7 @@ function Overview({
           Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width)),
         );
       }}
-      className="relative h-7 mb-2 rounded border border-[#181818] bg-[#0a0a0a] overflow-hidden cursor-pointer"
+      className="relative h-7 mb-2 rounded border border-line-soft bg-canvas overflow-hidden cursor-pointer"
       title="Click to jump"
     >
       {segments.map((s, i) => (
@@ -802,7 +802,7 @@ function SegmentList({
 }) {
   if (segments.length === 0) {
     return (
-      <div className="text-[12px] text-[#3a3a3a]">
+      <div className="text-[12px] text-ink-7">
         No segments. Process this recording in Library first.
       </div>
     );
@@ -822,25 +822,25 @@ function SegmentList({
               onClick={() => onSelect(s.id)}
               className="w-full text-left flex items-center gap-3 px-3 py-2 rounded border transition-colors"
               style={{
-                background: active ? "#121212" : "#0d0d0d",
-                borderColor: active ? "#2a2a2a" : "#161616",
+                background: active ? "var(--color-surface)" : "var(--color-inset)",
+                borderColor: active ? "var(--color-line-strong)" : "var(--color-line-soft)",
               }}
             >
               <span
                 className="w-2 h-8 rounded-sm"
                 style={{ background: SEG_COLOR[s.type] ?? "#444" }}
               />
-              <span className="text-[10px] text-[#3a3a3a] w-24">
+              <span className="text-[10px] text-ink-7 w-24">
                 {fmtTime(s.startSec)}–{fmtTime(s.endSec)}
               </span>
               <span
                 className="text-[12px] flex-1 truncate"
-                style={{ color: active ? "#fff" : "#888" }}
+                style={{ color: active ? "var(--color-ink)" : "var(--color-ink-3)" }}
               >
                 {name}
               </span>
               {s.manuallyEdited && (
-                <span className="text-[9px] text-[#3a7d44]">●</span>
+                <span className="text-[9px] text-success">●</span>
               )}
             </button>
           </li>
@@ -872,16 +872,16 @@ function Inspector({
   const commit = (patch: Partial<Seg>) => onChange(patch);
 
   return (
-    <aside className="border border-[#181818] rounded-lg p-5 bg-[#0d0d0d]">
-      <p className="text-[10px] text-[#3a3a3a] tracking-[0.1em] uppercase mb-3">
+    <aside className="border border-line-soft rounded-lg p-5 bg-inset">
+      <p className="text-[10px] text-ink-7 tracking-[0.1em] uppercase mb-3">
         Segment
       </p>
-      <p className="text-[12px] text-[#555] mb-4">
+      <p className="text-[12px] text-ink-5 mb-4">
         {fmtTime(seg.startSec)} — {fmtTime(seg.endSec)} ·{" "}
         {fmtTime(seg.endSec - seg.startSec)}
       </p>
 
-      <label className="block text-[10px] text-[#555] uppercase tracking-[0.08em] mb-1.5">
+      <label className="block text-[10px] text-ink-5 uppercase tracking-[0.08em] mb-1.5">
         Type
       </label>
       <div className="flex flex-wrap gap-1.5 mb-5">
@@ -893,9 +893,9 @@ function Inspector({
               onClick={() => commit({ type: t })}
               className="text-[11px] px-2.5 py-1 rounded border transition-colors"
               style={{
-                background: on ? (SEG_COLOR[t] ?? "#333") + "33" : "#0d0d0d",
-                borderColor: on ? SEG_COLOR[t] ?? "#444" : "#1f1f1f",
-                color: on ? "#fff" : "#777",
+                background: on ? (SEG_COLOR[t] ?? "#333") + "33" : "var(--color-inset)",
+                borderColor: on ? SEG_COLOR[t] ?? "#444" : "var(--color-line-soft)",
+                color: on ? "var(--color-ink)" : "var(--color-ink-4)",
               }}
             >
               {segmentLabel(t)}
@@ -904,7 +904,7 @@ function Inspector({
         })}
       </div>
 
-      <label className="block text-[10px] text-[#555] uppercase tracking-[0.08em] mb-1.5">
+      <label className="block text-[10px] text-ink-5 uppercase tracking-[0.08em] mb-1.5">
         Note
       </label>
       <input
@@ -914,12 +914,12 @@ function Inspector({
           if ((seg.label ?? "") !== label) commit({ label: label || null });
         }}
         placeholder="freeform label / note"
-        className="w-full bg-[#0d0d0d] border border-[#1f1f1f] rounded px-2.5 py-1.5 text-[12px] mb-5"
+        className="w-full bg-inset border border-line-soft rounded px-2.5 py-1.5 text-[12px] mb-5"
       />
 
       {(seg.type === "music" || seg.type === "talkover") && (
         <div className="space-y-3 mb-5">
-          <p className="text-[10px] text-[#555] uppercase tracking-[0.08em]">
+          <p className="text-[10px] text-ink-5 uppercase tracking-[0.08em]">
             {seg.type === "talkover" ? "Track (under the comment)" : "Track"}
           </p>
           <input
@@ -930,7 +930,7 @@ function Inspector({
                 commit({ trackTitle: title || null });
             }}
             placeholder="Title"
-            className="w-full bg-[#0d0d0d] border border-[#1f1f1f] rounded px-2.5 py-1.5 text-[12px]"
+            className="w-full bg-inset border border-line-soft rounded px-2.5 py-1.5 text-[12px]"
           />
           <input
             value={artist}
@@ -940,7 +940,7 @@ function Inspector({
                 commit({ trackArtist: artist || null });
             }}
             placeholder="Artist"
-            className="w-full bg-[#0d0d0d] border border-[#1f1f1f] rounded px-2.5 py-1.5 text-[12px]"
+            className="w-full bg-inset border border-line-soft rounded px-2.5 py-1.5 text-[12px]"
           />
           <input
             value={album}
@@ -950,7 +950,7 @@ function Inspector({
                 commit({ trackAlbum: album || null });
             }}
             placeholder="Album"
-            className="w-full bg-[#0d0d0d] border border-[#1f1f1f] rounded px-2.5 py-1.5 text-[12px]"
+            className="w-full bg-inset border border-line-soft rounded px-2.5 py-1.5 text-[12px]"
           />
           <input
             value={year}
@@ -962,7 +962,7 @@ function Inspector({
               if ((seg.trackYear ?? null) !== n) commit({ trackYear: n });
             }}
             placeholder="Year"
-            className="w-32 bg-[#0d0d0d] border border-[#1f1f1f] rounded px-2.5 py-1.5 text-[12px]"
+            className="w-32 bg-inset border border-line-soft rounded px-2.5 py-1.5 text-[12px]"
           />
         </div>
       )}
@@ -970,13 +970,13 @@ function Inspector({
       <div className="flex gap-2">
         <button
           onClick={onPlay}
-          className="flex-1 text-[11px] px-3 py-2 rounded border border-[#222] text-[#999] hover:text-white"
+          className="flex-1 text-[11px] px-3 py-2 rounded border border-line text-ink-3 hover:text-ink"
         >
           Play
         </button>
         <button
           onClick={onDelete}
-          className="text-[11px] px-3 py-2 rounded border border-[#3a1a1a] text-[#7d3a3a] hover:bg-[#1a0d0d] hover:text-[#c0392b]"
+          className="text-[11px] px-3 py-2 rounded border border-danger text-danger hover:bg-danger-soft hover:text-accent"
         >
           Delete
         </button>

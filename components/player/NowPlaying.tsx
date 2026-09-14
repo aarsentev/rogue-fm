@@ -36,7 +36,7 @@ export function NowPlaying({
   return (
     <>
       <div className="mb-1.5">
-        <span className="text-[11px] text-[#c0392b] tracking-[0.12em] font-semibold">
+        <span className="text-[11px] text-accent tracking-[0.12em] font-semibold">
           ● ON AIR
         </span>
       </div>
@@ -46,19 +46,19 @@ export function NowPlaying({
       >
         {detail.station.name}
       </h1>
-      <p className="text-sm text-[#444] mt-1 mb-8">
+      <p className="text-sm text-ink-6 mt-1 mb-8">
         {detail.station.freq} FM · {detail.station.genre}
       </p>
 
-      <div className="bg-[#0f0f0f] rounded-2xl px-8 py-7 border border-[#181818]">
-        <p className="text-[10px] text-[#3a3a3a] tracking-[0.1em] uppercase mb-2.5">
+      <div className="bg-surface rounded-2xl px-8 py-7 border border-line-soft">
+        <p className="text-[10px] text-ink-7 tracking-[0.1em] uppercase mb-2.5">
           Now playing
         </p>
-        <p className="text-[24px] font-medium mb-1 text-white truncate">
+        <p className="text-[24px] font-medium mb-1 text-ink truncate">
           {recordingName}
         </p>
         {trackTitle ? (
-          <p className="text-[14px] text-[#666] mb-7 truncate">
+          <p className="text-[14px] text-ink-4 mb-7 truncate">
             {trackTitle}
             {trackArtist ? ` — ${trackArtist}` : ""}
           </p>
@@ -70,12 +70,12 @@ export function NowPlaying({
             accent={detail.station.color}
           />
         ) : (
-          <p className="text-[14px] text-[#666] mb-7 truncate">
+          <p className="text-[14px] text-ink-4 mb-7 truncate">
             {segmentLabel(currentSegment?.type ?? null)}
           </p>
         )}
 
-        <div className="h-[3px] bg-[#1e1e1e] rounded mb-2">
+        <div className="h-[3px] bg-surface rounded mb-2">
           <div
             className="h-full rounded transition-[width] duration-[1s] ease-linear"
             style={{
@@ -85,13 +85,13 @@ export function NowPlaying({
           />
         </div>
         <div className="flex justify-between items-center">
-          <span className="text-[11px] text-[#444]">
+          <span className="text-[11px] text-ink-6">
             {fmtTime(state?.offsetInRecording ?? 0)}
           </span>
-          <span className="text-[10px] text-[#2a2a2a] tracking-[0.08em]">
+          <span className="text-[10px] text-ink-7 tracking-[0.08em]">
             LIVE
           </span>
-          <span className="text-[11px] text-[#444]">
+          <span className="text-[11px] text-ink-6">
             {fmtTime(state?.recording.duration ?? 0)}
           </span>
         </div>

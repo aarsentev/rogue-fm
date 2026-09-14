@@ -53,7 +53,7 @@ export function SegmentRibbon({
     <div className="mt-3">
       <div
         onClick={handleClick}
-        className={`relative h-[6px] w-full rounded overflow-hidden bg-[#141414] ${
+        className={`relative h-[6px] w-full rounded overflow-hidden bg-raised ${
           onSeek ? "cursor-pointer h-[10px]" : ""
         }`}
       >
@@ -78,7 +78,7 @@ export function SegmentRibbon({
           style={{ left: `${playheadPct}%`, background: accent }}
         />
       </div>
-      <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-[10px] text-[#3a3a3a]">
+      <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-[10px] text-ink-7">
         {presentTypes.map((t) => (
           <span key={t} className="flex items-center gap-1">
             <span
@@ -88,7 +88,7 @@ export function SegmentRibbon({
             {segmentLabel(t).replace(/^\W+\s*/, "").toLowerCase()}
           </span>
         ))}
-        <span className="ml-auto text-[#2a2a2a]">
+        <span className="ml-auto text-ink-7">
           {segments.length} segments
         </span>
       </div>

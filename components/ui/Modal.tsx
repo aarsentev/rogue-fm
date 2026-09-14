@@ -35,7 +35,7 @@ export function Modal({
       <div
         onClick={(e) => e.stopPropagation()}
         style={{ maxWidth }}
-        className="w-full bg-[#0f0f0f] border border-[#1e1e1e] rounded-2xl p-6"
+        className="w-full bg-surface border border-line-soft rounded-2xl p-6"
       >
         {children}
       </div>

@@ -67,7 +67,7 @@ function LogoCell({
       <button
         onClick={() => inputRef.current?.click()}
         title="Upload logo"
-        className="w-7 h-7 rounded-md overflow-hidden border border-[#222] cursor-pointer flex items-center justify-center"
+        className="w-7 h-7 rounded-md overflow-hidden border border-line cursor-pointer flex items-center justify-center"
         style={{ background: station.color }}
       >
         {station.logoPath ? (
@@ -80,7 +80,7 @@ function LogoCell({
             className="w-full h-full object-cover"
           />
         ) : (
-          <span className="text-[8px] text-white/70">{station.freq}</span>
+          <span className="text-[8px] text-ink/70">{station.freq}</span>
         )}
       </button>
       <input
@@ -98,7 +98,7 @@ function LogoCell({
         <button
           onClick={onClear}
           title="Remove logo"
-          className="text-[10px] text-[#3a3a3a] hover:text-[#c0392b]"
+          className="text-[10px] text-ink-7 hover:text-accent"
         >
           ×
         </button>
@@ -121,40 +121,40 @@ function StationForm({
   submitLabel: string;
 }) {
   return (
-    <div className="flex flex-wrap items-center gap-2 p-3 rounded-lg bg-[#0f0f0f] border border-[#222] mb-3">
+    <div className="flex flex-wrap items-center gap-2 p-3 rounded-lg bg-surface border border-line mb-3">
       <input
         placeholder="Name"
         value={value.name}
         onChange={(e) => onChange({ ...value, name: e.target.value })}
-        className="bg-[#0d0d0d] border border-[#222] rounded px-2.5 py-1.5 text-[12px] w-40"
+        className="bg-inset border border-line rounded px-2.5 py-1.5 text-[12px] w-40"
       />
       <input
         placeholder="Freq (98.3)"
         value={value.freq}
         onChange={(e) => onChange({ ...value, freq: e.target.value })}
-        className="bg-[#0d0d0d] border border-[#222] rounded px-2.5 py-1.5 text-[12px] w-24"
+        className="bg-inset border border-line rounded px-2.5 py-1.5 text-[12px] w-24"
       />
       <input
         placeholder="Genre"
         value={value.genre}
         onChange={(e) => onChange({ ...value, genre: e.target.value })}
-        className="bg-[#0d0d0d] border border-[#222] rounded px-2.5 py-1.5 text-[12px] w-44"
+        className="bg-inset border border-line rounded px-2.5 py-1.5 text-[12px] w-44"
       />
       <input
         type="color"
         value={value.color}
         onChange={(e) => onChange({ ...value, color: e.target.value })}
-        className="w-9 h-8 bg-transparent border border-[#222] rounded cursor-pointer"
+        className="w-9 h-8 bg-transparent border border-line rounded cursor-pointer"
       />
       <button
         onClick={onSubmit}
-        className="text-[11px] px-3 py-1.5 rounded border border-[#2f6f3a] text-[#3a7d44] hover:bg-[#0d130d]"
+        className="text-[11px] px-3 py-1.5 rounded border border-success text-success hover:bg-success-soft"
       >
         {submitLabel}
       </button>
       <button
         onClick={onCancel}
-        className="text-[11px] px-3 py-1.5 rounded border border-[#222] text-[#666] hover:text-white"
+        className="text-[11px] px-3 py-1.5 rounded border border-line text-ink-4 hover:text-ink"
       >
         Cancel
       </button>
@@ -309,15 +309,15 @@ export default function Library() {
   };
 
   return (
-    <div className="min-h-screen bg-[#080808] text-white">
-      <header className="px-8 py-4 border-b border-[#141414] flex items-center gap-4">
+    <div className="min-h-screen bg-canvas text-ink">
+      <header className="px-8 py-4 border-b border-line-soft flex items-center gap-4">
         <Link
           href="/"
-          className="text-xs font-semibold tracking-[0.15em] text-[#666] hover:text-white"
+          className="text-xs font-semibold tracking-[0.15em] text-ink-4 hover:text-ink"
         >
           ← ROGUE FM
         </Link>
-        <span className="text-xs font-semibold tracking-[0.15em] text-[#888]">
+        <span className="text-xs font-semibold tracking-[0.15em] text-ink-3">
           LIBRARY
         </span>
         <button
@@ -325,13 +325,13 @@ export default function Library() {
             setCreating((v) => !v);
             setCreateForm(EMPTY);
           }}
-          className="ml-auto text-[11px] text-[#666] hover:text-white border border-[#222] rounded px-3 py-1"
+          className="ml-auto text-[11px] text-ink-4 hover:text-ink border border-line rounded px-3 py-1"
         >
           + New station
         </button>
         <Link
           href="/upload"
-          className="text-[11px] text-[#666] hover:text-white border border-[#222] rounded px-3 py-1"
+          className="text-[11px] text-ink-4 hover:text-ink border border-line rounded px-3 py-1"
         >
           + Upload
         </Link>
@@ -339,7 +339,7 @@ export default function Library() {
 
       <main className="px-10 py-9 max-w-[900px]">
         {error && (
-          <p className="text-[12px] text-[#c0392b] mb-4">{error}</p>
+          <p className="text-[12px] text-accent mb-4">{error}</p>
         )}
 
         {creating && (
@@ -353,7 +353,7 @@ export default function Library() {
         )}
 
         {!stations ? (
-          <p className="text-[#666]">Loading…</p>
+          <p className="text-ink-4">Loading…</p>
         ) : (
           stations.map((st) => (
             <section key={st.id} className="mb-9">
@@ -373,7 +373,7 @@ export default function Library() {
                     onClear={() => clearLogo(st.id)}
                   />
                   <h2 className="text-[15px] font-semibold">{st.name}</h2>
-                  <span className="text-[11px] text-[#444]">
+                  <span className="text-[11px] text-ink-6">
                     {st.freq} FM{st.genre ? ` · ${st.genre}` : ""}
                   </span>
                   <button
@@ -386,13 +386,13 @@ export default function Library() {
                         color: st.color,
                       });
                     }}
-                    className="ml-3 text-[11px] text-[#555] hover:text-white"
+                    className="ml-3 text-[11px] text-ink-5 hover:text-ink"
                   >
                     edit
                   </button>
                   <button
                     onClick={() => deleteStation(st)}
-                    className="text-[11px] text-[#5a2a2a] hover:text-[#c0392b]"
+                    className="text-[11px] text-danger hover:text-accent"
                   >
                     delete
                   </button>
@@ -400,7 +400,7 @@ export default function Library() {
               )}
 
               {st.recordings.length === 0 ? (
-                <p className="text-[12px] text-[#3a3a3a] pl-5">
+                <p className="text-[12px] text-ink-7 pl-5">
                   No recordings.
                 </p>
               ) : (
@@ -411,13 +411,13 @@ export default function Library() {
                     return (
                       <div
                         key={r.id}
-                        className="flex items-center gap-4 px-4 py-3 rounded-lg bg-[#0f0f0f] border border-[#181818]"
+                        className="flex items-center gap-4 px-4 py-3 rounded-lg bg-surface border border-line-soft"
                       >
                         <div className="min-w-0 flex-1">
-                          <p className="text-[13px] text-white truncate">
+                          <p className="text-[13px] text-ink truncate">
                             {r.displayName ?? r.filename}
                           </p>
-                          <p className="text-[11px] text-[#555]">
+                          <p className="text-[11px] text-ink-5">
                             {r.duration > 0 ? fmtTime(r.duration) : "—"} ·{" "}
                             {(r.fileSize / 1_000_000).toFixed(1)} MB ·{" "}
                             {r.segmentCount} segments
@@ -430,7 +430,7 @@ export default function Library() {
                         {r.processingStatus === "done" && st.slug && r.slug && (
                           <Link
                             href={`/editor/${st.slug}/${r.slug}`}
-                            className="text-[11px] px-3 py-1.5 rounded border border-[#222] text-[#999] hover:text-white hover:border-[#333]"
+                            className="text-[11px] px-3 py-1.5 rounded border border-line text-ink-3 hover:text-ink hover:border-line-strong"
                           >
                             Edit
                           </Link>
@@ -438,7 +438,7 @@ export default function Library() {
                         <button
                           disabled={busy}
                           onClick={() => process(r.id)}
-                          className="text-[11px] px-3 py-1.5 rounded border border-[#222] text-[#999] hover:text-white hover:border-[#333] disabled:opacity-40 disabled:cursor-not-allowed"
+                          className="text-[11px] px-3 py-1.5 rounded border border-line text-ink-3 hover:text-ink hover:border-line-strong disabled:opacity-40 disabled:cursor-not-allowed"
                         >
                           {busy
                             ? "Processing…"

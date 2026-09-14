@@ -126,7 +126,7 @@ export default function Home() {
       : null;
 
   return (
-    <div className="min-h-screen bg-[#080808] text-white flex flex-col">
+    <div className="min-h-screen bg-canvas text-ink flex flex-col">
       <Topbar />
       <div className="flex flex-1">
         <Sidebar
@@ -143,7 +143,7 @@ export default function Home() {
           />
 
           {!detail ? (
-            <div className="text-[#666] mt-8">Loading station…</div>
+            <div className="text-ink-4 mt-8">Loading station…</div>
           ) : (
             <>
               <div className="max-w-[760px] w-full mt-6">
@@ -160,8 +160,8 @@ export default function Home() {
                     onClick={() => setSeek((v) => !v)}
                     className="mt-3 text-[10px] tracking-[0.08em] px-2.5 py-1 rounded border transition-colors"
                     style={{
-                      borderColor: seek ? "#7d5fb0" : "#222",
-                      color: seek ? "#7d5fb0" : "#555",
+                      borderColor: seek ? "var(--color-dev)" : "var(--color-line)",
+                      color: seek ? "var(--color-dev)" : "var(--color-ink-5)",
                     }}
                   >
                     🛠 SEEK {seek ? "ON — click ribbon or Up next to jump" : "off"}
@@ -177,7 +177,7 @@ export default function Home() {
 
                 <button
                   onClick={() => (started ? tuneOut() : tuneIn())}
-                  className="mt-8 px-6 py-3 rounded-lg border border-[#181818] bg-[#0f0f0f] hover:bg-[#141414] text-sm text-[#aaa] transition-colors"
+                  className="mt-8 px-6 py-3 rounded-lg border border-line-soft bg-surface hover:bg-raised text-sm text-ink-2 transition-colors"
                 >
                   {started ? "Tune out" : "Tap to tune in"}
                 </button>
