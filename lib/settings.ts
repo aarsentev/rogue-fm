@@ -15,10 +15,24 @@ export type Settings = {
   // Acoustic-fingerprint track identification. Off by default — it requires
   // an AcoustID API key and is not wired to a backend yet.
   shazamMode: boolean;
+  // Interface theme. Off by default — the app is dark-first.
+  lightMode: boolean;
 };
 
 const STORAGE_KEY = "roguefm.settings";
-const DEFAULTS: Settings = { classicMode: true, shazamMode: false };
+const DEFAULTS: Settings = {
+  classicMode: true,
+  shazamMode: false,
+  lightMode: false,
+};
+
+// Apply the theme to <html> so the CSS token overrides take effect. Also run
+// verbatim as an inline pre-paint script in the document head (see layout) to
+// avoid a flash of the wrong theme; keep it self-contained.
+export function applyTheme(lightMode: boolean) {
+  if (typeof document === "undefined") return;
+  document.documentElement.dataset.theme = lightMode ? "light" : "dark";
+}
 
 function load(): Settings {
   if (typeof window === "undefined") return DEFAULTS;
@@ -50,6 +64,7 @@ export function getSettings(): Settings {
 export function setSettings(patch: Partial<Settings>) {
   settings = { ...settings, ...patch };
   persist();
+  if ("lightMode" in patch) applyTheme(settings.lightMode);
   for (const l of listeners) l();
 }
 

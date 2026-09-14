@@ -1,9 +1,84 @@
 @import "tailwindcss";
 
+/*
+ * Semantic color tokens — the single source of truth for the palette.
+ * Utilities come out as bg-canvas, text-ink-4, border-line-soft, etc.
+ * The @theme block is the DARK palette (the default); [data-theme="light"]
+ * overrides the same tokens for light mode. Components never hardcode hex.
+ */
+@theme {
+  --color-canvas: #080808; /* page background */
+  --color-surface: #0f0f0f; /* cards / raised panels */
+  --color-inset: #0d0d0d; /* recessed rows, sunken wells */
+  --color-raised: #141414; /* hover / progress track */
+
+  --color-line: #222222; /* default border */
+  --color-line-soft: #1a1a1a; /* faint hairlines */
+  --color-line-strong: #2c2c2c; /* prominent border */
+
+  --color-ink: #ffffff; /* primary text */
+  --color-ink-2: #cccccc;
+  --color-ink-3: #909090;
+  --color-ink-4: #666666;
+  --color-ink-5: #555555;
+  --color-ink-6: #444444;
+  --color-ink-7: #363636; /* faintest labels / marks */
+
+  --color-accent: #c0392b; /* brand red (ON AIR) */
+  --color-on-accent: #0a0a0a; /* text on an accent fill */
+  --color-success: #3a7d44;
+  --color-info: #2f6fb0;
+  --color-gold: #d4a017;
+  --color-danger: #7d5a5a; /* error text */
+  --color-dev: #7d5fb0; /* dev-only affordances (SEEK) */
+
+  --color-danger-soft: #1a0d0d; /* tinted state backgrounds */
+  --color-success-soft: #0d130d;
+  --color-info-soft: #10141a;
+}
+
+:root[data-theme="light"] {
+  --color-canvas: #f4f3f0;
+  --color-surface: #ffffff;
+  --color-inset: #efeeeb;
+  --color-raised: #e8e7e3;
+
+  --color-line: #e1dfd9;
+  --color-line-soft: #ecebe8;
+  --color-line-strong: #d0cec6;
+
+  --color-ink: #191710;
+  --color-ink-2: #35332c;
+  --color-ink-3: #6c6a61;
+  --color-ink-4: #8a887e;
+  --color-ink-5: #9d9b90;
+  --color-ink-6: #b0aea3;
+  --color-ink-7: #c6c4b9;
+
+  --color-accent: #b0321f;
+  --color-on-accent: #ffffff;
+  --color-success: #2f6f3a;
+  --color-info: #2b62a0;
+  --color-gold: #9a7410;
+  --color-danger: #9c4a4a;
+  --color-dev: #6a4d9a;
+
+  --color-danger-soft: #f6e8e6;
+  --color-success-soft: #e8f1e9;
+  --color-info-soft: #e6ecf4;
+}
+
+html {
+  color-scheme: dark;
+}
+html[data-theme="light"] {
+  color-scheme: light;
+}
+
 html,
 body {
-  background: #080808;
-  color: #fff;
+  background: var(--color-canvas);
+  color: var(--color-ink);
   font-family: system-ui, -apple-system, sans-serif;
 }
 
@@ -13,14 +88,63 @@ body {
   animation-iteration-count: infinite;
   animation-direction: alternate;
 }
-.eq-bar-0 { animation-name: eq0; }
-.eq-bar-1 { animation-name: eq1; animation-delay: 0.1s; }
-.eq-bar-2 { animation-name: eq2; animation-delay: 0.2s; }
-.eq-bar-3 { animation-name: eq3; animation-delay: 0.05s; }
-.eq-bar-4 { animation-name: eq4; animation-delay: 0.15s; }
+.eq-bar-0 {
+  animation-name: eq0;
+}
+.eq-bar-1 {
+  animation-name: eq1;
+  animation-delay: 0.1s;
+}
+.eq-bar-2 {
+  animation-name: eq2;
+  animation-delay: 0.2s;
+}
+.eq-bar-3 {
+  animation-name: eq3;
+  animation-delay: 0.05s;
+}
+.eq-bar-4 {
+  animation-name: eq4;
+  animation-delay: 0.15s;
+}
 
-@keyframes eq0 { from { height: 4px;  } to { height: 10px; } }
-@keyframes eq1 { from { height: 10px; } to { height: 4px;  } }
-@keyframes eq2 { from { height: 6px;  } to { height: 14px; } }
-@keyframes eq3 { from { height: 12px; } to { height: 5px;  } }
-@keyframes eq4 { from { height: 7px;  } to { height: 13px; } }
+@keyframes eq0 {
+  from {
+    height: 4px;
+  }
+  to {
+    height: 10px;
+  }
+}
+@keyframes eq1 {
+  from {
+    height: 10px;
+  }
+  to {
+    height: 4px;
+  }
+}
+@keyframes eq2 {
+  from {
+    height: 6px;
+  }
+  to {
+    height: 14px;
+  }
+}
+@keyframes eq3 {
+  from {
+    height: 12px;
+  }
+  to {
+    height: 5px;
+  }
+}
+@keyframes eq4 {
+  from {
+    height: 7px;
+  }
+  to {
+    height: 13px;
+  }
+}
