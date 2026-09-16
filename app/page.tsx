@@ -18,6 +18,7 @@ import type { StationDetail, StationSummary } from "@/lib/types";
 import { Topbar } from "@/components/layout/Topbar";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { CoverFlow } from "@/components/station/CoverFlow";
+import { TunerDial } from "@/components/station/TunerDial";
 import { NowPlaying } from "@/components/player/NowPlaying";
 import { UpNext } from "@/components/player/UpNext";
 import { SkipControls } from "@/components/player/SkipControls";
@@ -137,6 +138,12 @@ export default function Home() {
         />
         <main className="flex-1 px-14 py-11 flex flex-col">
           <CoverFlow
+            stations={stations ?? []}
+            selectedId={selectedId}
+            onSelect={setSelectedId}
+          />
+
+          <TunerDial
             stations={stations ?? []}
             selectedId={selectedId}
             onSelect={setSelectedId}
