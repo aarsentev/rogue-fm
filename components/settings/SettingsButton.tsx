@@ -31,6 +31,11 @@ const ROWS: ToggleRow[] = [
     label: "Light mode",
     description: "Switch the interface to a light theme.",
   },
+  {
+    key: "equalizer",
+    label: "Equalizer",
+    description: "Show reactive bars that jump with the music.",
+  },
 ];
 
 export function SettingsButton() {

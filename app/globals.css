@@ -148,3 +148,16 @@ body {
     height: 13px;
   }
 }
+
+/* Slow horizontal drift for the non-music SmoothWave (seamless at -50%). */
+.wave-flow {
+  animation: wave-flow 6s linear infinite;
+}
+@keyframes wave-flow {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}

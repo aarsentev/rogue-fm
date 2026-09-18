@@ -1,6 +1,6 @@
 "use client";
 
-import { Howl } from "howler";
+import { Howl, Howler } from "howler";
 import { playRadioStatic } from "@/lib/broadcast/static";
 import { getSettings } from "@/lib/settings";
 
@@ -15,8 +15,49 @@ export class Player {
   private onEndedCb: (() => void) | null = null;
   private ended = false;
 
+  // Shared WebAudio analyser fed by the current audio element (equalizer).
+  private analyser: AnalyserNode | null = null;
+  private tapped = new WeakSet<HTMLMediaElement>();
+
   setOnEnded(cb: (() => void) | null) {
     this.onEndedCb = cb;
+  }
+
+  /**
+   * A shared AnalyserNode fed by whatever recording is currently playing, for
+   * the equalizer visualiser. Lazily routes each html5 audio element through
+   * WebAudio (element → analyser → destination) so audio keeps playing while we
+   * read its spectrum. Returns null until an audio context + element exist, and
+   * any wiring failure is swallowed so playback is never interrupted.
+   */
+  getAnalyser(): AnalyserNode | null {
+    const ctx = Howler.ctx as AudioContext | undefined;
+    if (!ctx) return null;
+    if (!this.analyser) {
+      const an = ctx.createAnalyser();
+      an.fftSize = 128; // 64 frequency bins
+      an.smoothingTimeConstant = 0.8;
+      an.connect(ctx.destination); // pass audio through so it stays audible
+      this.analyser = an;
+    }
+    const node = this.currentAudioNode();
+    if (node && !this.tapped.has(node)) {
+      try {
+        ctx.createMediaElementSource(node).connect(this.analyser);
+        this.tapped.add(node);
+      } catch {
+        // element already sourced, or wiring failed — leave audio untouched
+      }
+    }
+    return this.analyser;
+  }
+
+  private currentAudioNode(): HTMLMediaElement | null {
+    const sounds = (
+      this.howl as unknown as { _sounds?: { _node?: unknown }[] }
+    )?._sounds;
+    const node = sounds?.[0]?._node;
+    return node instanceof HTMLMediaElement ? node : null;
   }
 
   // `duration` is the recording's LOGICAL (trimmed) length from the DB, which

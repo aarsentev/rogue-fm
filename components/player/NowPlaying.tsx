@@ -5,6 +5,9 @@ import type { ClockState } from "@/lib/broadcast/clock";
 import { segmentLabel, type Seg } from "@/lib/broadcast/skipLogic";
 import { SegmentRibbon } from "@/components/player/SegmentRibbon";
 import { TrackIdentify } from "@/components/player/TrackIdentify";
+import { Equalizer } from "@/components/player/Equalizer";
+import { SmoothWave } from "@/components/player/SmoothWave";
+import { useSettings } from "@/lib/settings";
 
 type Props = {
   detail: StationDetail;
@@ -21,6 +24,7 @@ export function NowPlaying({
   segments,
   onSeek,
 }: Props) {
+  const { equalizer } = useSettings();
   const progress = state
     ? (state.offsetInRecording / state.recording.duration) * 100
     : 0;
@@ -75,7 +79,19 @@ export function NowPlaying({
           </p>
         )}
 
-        <div className="h-[3px] bg-surface rounded mb-2">
+        {equalizer && (
+          <div className="mb-7 -mt-1">
+            {currentSegment?.type === "music" ? (
+              // Music → the reactive bars. Ads / DJ talk / overlays → the calm
+              // wave with a label, since a music meter would be nonsense there.
+              <Equalizer color={detail.station.color} />
+            ) : (
+              <SmoothWave color={detail.station.color} />
+            )}
+          </div>
+        )}
+
+        <div className="h-[3px] bg-raised rounded mb-2">
           <div
             className="h-full rounded transition-[width] duration-[1s] ease-linear"
             style={{

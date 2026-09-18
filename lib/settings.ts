@@ -17,6 +17,8 @@ export type Settings = {
   shazamMode: boolean;
   // Interface theme. Off by default — the app is dark-first.
   lightMode: boolean;
+  // Audio-reactive equalizer bars on the now-playing panel.
+  equalizer: boolean;
 };
 
 const STORAGE_KEY = "roguefm.settings";
@@ -24,6 +26,7 @@ const DEFAULTS: Settings = {
   classicMode: true,
   shazamMode: false,
   lightMode: false,
+  equalizer: false,
 };
 
 // Apply the theme to <html> so the CSS token overrides take effect. Also run
