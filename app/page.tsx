@@ -13,6 +13,7 @@ import {
   overrideEpoch,
 } from "@/lib/broadcast/engine";
 import { useMediaSession } from "@/lib/broadcast/mediaSession";
+import { useSettings } from "@/lib/settings";
 import { segmentAt, type Seg } from "@/lib/broadcast/skipLogic";
 import type { StationDetail, StationSummary } from "@/lib/types";
 import { Topbar } from "@/components/layout/Topbar";
@@ -28,12 +29,11 @@ export default function Home() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const { started, detail, segments, skipDJ, skipAds, epochOverride } =
     useBroadcast();
+  const { seekMode } = useSettings();
   const [, setTick] = useState(0);
 
-  // Dev-only seek: shift a local epoch override so the broadcast clock
-  // "time-travels" to a clicked position. Never persisted; prod stays live.
-  const DEV = process.env.NODE_ENV !== "production";
-  const [seek, setSeek] = useState(false);
+  // Seek shifts a local epoch override so the broadcast clock "time-travels" to
+  // a clicked position. Never persisted; when off, the broadcast stays live.
 
   useEffect(() => {
     fetch("/api/stations")
@@ -159,27 +159,14 @@ export default function Home() {
                   state={state}
                   currentSegment={currentSegment}
                   segments={segments}
-                  onSeek={seek ? handleSeek : undefined}
+                  onSeek={seekMode ? handleSeek : undefined}
                 />
-
-                {DEV && (
-                  <button
-                    onClick={() => setSeek((v) => !v)}
-                    className="mt-3 text-[10px] tracking-[0.08em] px-2.5 py-1 rounded border transition-colors"
-                    style={{
-                      borderColor: seek ? "var(--color-dev)" : "var(--color-line)",
-                      color: seek ? "var(--color-dev)" : "var(--color-ink-5)",
-                    }}
-                  >
-                    🛠 SEEK {seek ? "ON — click ribbon or Up next to jump" : "off"}
-                  </button>
-                )}
 
                 <UpNext
                   segments={segments}
                   positionSec={state?.offsetInRecording ?? 0}
                   hasSegmentData={segments.length > 0}
-                  onSeek={seek ? handleSeek : undefined}
+                  onSeek={seekMode ? handleSeek : undefined}
                 />
 
                 <button

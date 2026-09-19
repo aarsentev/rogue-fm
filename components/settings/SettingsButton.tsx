@@ -36,6 +36,11 @@ const ROWS: ToggleRow[] = [
     label: "Equalizer",
     description: "Show reactive bars that jump with the music.",
   },
+  {
+    key: "seekMode",
+    label: "Seek",
+    description: "Click the timeline or Up next to jump to a segment.",
+  },
 ];
 
 export function SettingsButton() {

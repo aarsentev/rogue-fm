@@ -19,6 +19,9 @@ export type Settings = {
   lightMode: boolean;
   // Audio-reactive equalizer bars on the now-playing panel.
   equalizer: boolean;
+  // Let the timeline and Up next be clicked to jump to a segment. Off keeps
+  // the broadcast strictly live.
+  seekMode: boolean;
 };
 
 const STORAGE_KEY = "roguefm.settings";
@@ -27,6 +30,7 @@ const DEFAULTS: Settings = {
   shazamMode: false,
   lightMode: false,
   equalizer: false,
+  seekMode: false,
 };
 
 // Apply the theme to <html> so the CSS token overrides take effect. Also run
